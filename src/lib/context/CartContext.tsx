@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Product, CartItem, DeliveryMode, Coupon, PlatformSettings } from '../types';
 import { DEFAULT_PLATFORM_SETTINGS } from '../initial-data';
+import { useAuth } from './AuthContext';
 
 interface CartContextType {
   items: CartItem[];
@@ -23,6 +24,9 @@ interface CartContextType {
   finalTotal: number;
   deliveryFee: number;
   platformFee: number;
+  cookerSelfDeliveryFee: number;
+  smartRiderDeliveryFee: number;
+  allowSelfDelivery: boolean;
   platformSettings: PlatformSettings;
   refreshSettings: () => Promise<void>;
 }
@@ -61,27 +65,54 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
   }, [refreshSettings]);
 
-  // Load from local storage
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id || 'guest';
+  const isLoadedRef = useRef(false);
+
+  // Load from local storage whenever current user changes
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('hf_cart_items');
+      const userKey = `hf_cart_items_${currentUserId}`;
+      let saved = localStorage.getItem(userKey);
+
+      // If user logged in and user-cart is empty, migrate unattached guest cart
+      if ((!saved || saved === '[]') && currentUserId !== 'guest') {
+        const guestSaved = localStorage.getItem('hf_cart_items_guest') || localStorage.getItem('hf_cart_items');
+        if (guestSaved && guestSaved !== '[]') {
+          saved = guestSaved;
+          localStorage.removeItem('hf_cart_items_guest');
+          localStorage.removeItem('hf_cart_items');
+        }
+      }
+
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setItems(parsed);
           setCookerId(parsed[0].cookerId);
           setCookerStoreName(parsed[0].cookerStoreName);
+        } else {
+          setItems([]);
+          setCookerId(null);
+          setCookerStoreName(null);
         }
+      } else {
+        setItems([]);
+        setCookerId(null);
+        setCookerStoreName(null);
       }
     } catch {}
-  }, []);
+    isLoadedRef.current = true;
+  }, [currentUserId]);
 
-  // Save to local storage
+  // Save to local storage for the active user
   useEffect(() => {
+    if (!isLoadedRef.current) return;
     try {
-      localStorage.setItem('hf_cart_items', JSON.stringify(items));
+      const userKey = `hf_cart_items_${currentUserId}`;
+      localStorage.setItem(userKey, JSON.stringify(items));
     } catch {}
-  }, [items]);
+  }, [items, currentUserId]);
 
   const addToCart = (product: Product, quantity: number = 1, storeName?: string) => {
     if (items.length > 0 && cookerId && cookerId !== product.cookerId) {
@@ -142,17 +173,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setAppliedCoupon(null);
     setDiscountAmount(0);
     try {
+      localStorage.removeItem(`hf_cart_items_${currentUserId}`);
       localStorage.removeItem('hf_cart_items');
+      localStorage.removeItem('hf_cart_items_guest');
     } catch {}
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Delivery fee baseline & dynamic platform tech fee
-  const baseDeliveryFee = Number(platformSettings.baseDeliveryFee ?? 30);
-  const deliveryFee = items.length > 0 ? (deliveryMode === 'CUSTOMER_PICKUP' ? 0 : baseDeliveryFee) : 0;
-  const platformFee = items.length > 0 ? Number(platformSettings.platformFee ?? 5) : 0;
+  // Fixed delivery fee calculation without km/distance:
+  // 1. Smart Rider Delivery: Admin fixed charge
+  // 2. Cooker Self-Delivery: Dish-specific fixed charge specified by cooker
+  // 3. Customer Pickup: Free (₹0)
+  const smartRiderDeliveryFee = Number(platformSettings.smartRiderDeliveryFee ?? platformSettings.baseDeliveryFee ?? 30);
+  const cookerSelfDeliveryFee = items.length > 0 && items[0]?.product?.selfDeliveryFee !== undefined
+    ? Number(items[0]?.product?.selfDeliveryFee)
+    : 30;
+  const allowSelfDelivery = items.length === 0 || items.every(i => i.product.allowSelfDelivery !== false);
+
+  const deliveryFee = items.length === 0
+    ? 0
+    : deliveryMode === 'CUSTOMER_PICKUP'
+    ? 0
+    : deliveryMode === 'SELF_DELIVERY'
+    ? cookerSelfDeliveryFee
+    : smartRiderDeliveryFee;
+
+  // Customer Platform Tech Fee is completely disabled / 0
+  const platformFee = 0;
 
   const applyCoupon = async (code: string) => {
     try {
@@ -179,7 +228,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setDiscountAmount(0);
   };
 
-  const finalTotal = Math.max(0, subtotal + deliveryFee + platformFee - discountAmount);
+  const finalTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
 
   return (
     <CartContext.Provider
@@ -202,6 +251,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         finalTotal,
         deliveryFee,
         platformFee,
+        cookerSelfDeliveryFee,
+        smartRiderDeliveryFee,
+        allowSelfDelivery,
         platformSettings,
         refreshSettings,
       }}

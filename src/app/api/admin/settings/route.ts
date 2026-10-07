@@ -30,25 +30,17 @@ export async function POST(request: Request) {
 
     const sanitizedUpdates: Record<string, number> = {};
 
-    if (updates.commissionRatePercent !== undefined) {
-      const val = Number(updates.commissionRatePercent);
-      if (!isNaN(val)) sanitizedUpdates.commissionRatePercent = Math.max(0, Math.min(100, Math.round(val * 100) / 100));
+    if (updates.smartRiderDeliveryFee !== undefined || updates.baseDeliveryFee !== undefined) {
+      const val = Number(updates.smartRiderDeliveryFee ?? updates.baseDeliveryFee);
+      if (!isNaN(val)) {
+        sanitizedUpdates.smartRiderDeliveryFee = Math.max(0, Math.round(val));
+        sanitizedUpdates.baseDeliveryFee = sanitizedUpdates.smartRiderDeliveryFee;
+      }
     }
 
-    if (updates.baseDeliveryFee !== undefined) {
-      const val = Number(updates.baseDeliveryFee);
-      if (!isNaN(val)) sanitizedUpdates.baseDeliveryFee = Math.max(0, Math.round(val));
-    }
-
-    if (updates.deliveryFeePerKm !== undefined) {
-      const val = Number(updates.deliveryFeePerKm);
-      if (!isNaN(val)) sanitizedUpdates.deliveryFeePerKm = Math.max(0, Math.round(val));
-    }
-
-    if (updates.platformFee !== undefined) {
-      const val = Number(updates.platformFee);
-      if (!isNaN(val)) sanitizedUpdates.platformFee = Math.max(0, Math.round(val));
-    }
+    sanitizedUpdates.commissionRatePercent = 0;
+    sanitizedUpdates.platformFee = 0;
+    sanitizedUpdates.deliveryFeePerKm = 0;
 
     if (updates.relevanceWeight !== undefined) {
       const val = Number(updates.relevanceWeight);

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/CartContext';
+import { useAuth } from '@/lib/context/AuthContext';
 import {
   Trash2,
   Plus,
@@ -19,6 +20,7 @@ import {
 
 export default function CartPage() {
   const router = useRouter();
+  const { currentUser } = useAuth();
   const {
     items,
     cookerStoreName,
@@ -230,12 +232,10 @@ export default function CartPage() {
                 <span className="font-semibold text-gray-900">₹{subtotal}</span>
               </div>
               <div className="flex justify-between">
-                <span>Delivery Partner Fee</span>
-                <span className="font-semibold text-gray-900">₹{deliveryFee}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Platform Tech Fee</span>
-                <span className="font-semibold text-gray-900">₹{platformFee}</span>
+                <span>Delivery Fee</span>
+                <span className="font-semibold text-gray-900">
+                  {deliveryFee === 0 ? '₹0 (Free)' : `₹${deliveryFee}`}
+                </span>
               </div>
 
               {discountAmount > 0 && (
@@ -253,11 +253,22 @@ export default function CartPage() {
 
             <button
               type="button"
-              onClick={() => router.push('/checkout')}
+              onClick={() => {
+                if (!currentUser) {
+                  router.push('/auth/login?redirect=/checkout');
+                } else {
+                  router.push('/checkout');
+                }
+              }}
               className="w-full mt-4 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 rounded-2xl text-sm shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
             >
-              Proceed to Delivery Address →
+              {currentUser ? 'Proceed to Delivery Address →' : 'Sign In to Proceed to Checkout →'}
             </button>
+            {!currentUser && (
+              <p className="text-[11px] text-gray-500 text-center mt-2 font-medium">
+                Customer registration / login required to place orders
+              </p>
+            )}
           </div>
         </div>
       </div>

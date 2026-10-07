@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/context/AuthContext';
 import { Order, CookerProfile, DeliveryPersonProfile, Review, OrderStatus } from '@/lib/types';
 import {
   CheckCircle2,
@@ -46,6 +47,7 @@ const PICKUP_STEPS: { status: OrderStatus; label: string; desc: string }[] = [
 ];
 
 export default function OrderTrackingClient({ initialOrder, cooker, rider, existingReview }: Props) {
+  const { currentUser, currentRole } = useAuth();
   const [order, setOrder] = useState<Order>(initialOrder);
   const [reviewRating, setReviewRating] = useState(5);
   const [tasteRating, setTasteRating] = useState(5);
@@ -53,6 +55,12 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(Boolean(existingReview));
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Role permissions
+  const isAdmin = currentRole === 'ADMIN';
+  const isCooker = currentRole === 'COOKER' || isAdmin;
+  const isRider = currentRole === 'RIDER' || isAdmin;
+  const isCustomer = currentUser?.id === order.customerId || currentRole === 'CUSTOMER' || isAdmin;
 
   const activeSteps = order.deliveryMode === 'CUSTOMER_PICKUP' ? PICKUP_STEPS : ORDER_STEPS;
 
@@ -69,8 +77,8 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
 
   const currentStepIndex = getStepIndex(order.status);
 
-  // Quick Simulation Action for effortless testing of the complete lifecycle
-  const advanceOrderStatus = async (nextStatus: OrderStatus, note?: string) => {
+  // Role-enforced Simulation Action
+  const advanceOrderStatus = async (nextStatus: OrderStatus, note?: string, roleOverride?: string) => {
     setIsUpdatingStatus(true);
     try {
       const res = await fetch(`/api/orders/${order.id}/status`, {
@@ -78,8 +86,8 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: nextStatus,
-          actorName: 'Test Simulator',
-          actorRole: 'COOKER',
+          actorName: currentUser?.name || 'Authorized Actor',
+          actorRole: roleOverride || currentRole || 'COOKER',
           note,
         }),
       });
@@ -127,97 +135,182 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Test Lifecycle Controller Banner */}
-      <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2">
-          <Play className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="font-bold text-amber-900">Order Simulator:</span>
-          <span className="text-amber-800">Test live lifecycle transitions directly here:</span>
+      {/* Role-Enforced Order Simulator Banner */}
+      <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-4 space-y-2.5 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Play className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="font-bold text-amber-900">Order Simulator:</span>
+            <span className="text-amber-800">Role-governed lifecycle transitions</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {isAdmin ? (
+              <span className="bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                🛡️ Admin Simulator (Full Access)
+              </span>
+            ) : isCooker ? (
+              <span className="bg-amber-100 text-amber-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                👨‍🍳 Cooker Mode ({currentUser?.name || 'Cooker'})
+              </span>
+            ) : isRider ? (
+              <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                🛵 Rider Mode ({currentUser?.name || 'Rider'})
+              </span>
+            ) : currentUser ? (
+              <span className="bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                👤 Customer View ({currentUser?.name || 'Customer'})
+              </span>
+            ) : (
+              <span className="bg-gray-100 text-gray-600 font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                🔒 Guest (Read-Only)
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-amber-200/50">
+          {/* Step 1: Cooker Accept Order */}
           {order.status === 'PENDING' && (
-            <button
-              onClick={() => advanceOrderStatus('ACCEPTED', 'Accepted by kitchen')}
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold"
-            >
-              1. Cooker: Accept Order
-            </button>
+            isCooker ? (
+              <button
+                onClick={() => advanceOrderStatus('ACCEPTED', 'Accepted by kitchen', 'COOKER')}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1"
+              >
+                <span>👨‍🍳 1. Cooker: Accept Order</span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>⏳ Awaiting Home Cooker to Accept Order</span>
+                <span className="text-[10px] text-amber-700 font-bold not-italic">(Requires Cooker Role)</span>
+              </div>
+            )
           )}
 
+          {/* Step 2: Cooker Start Baking */}
           {order.status === 'ACCEPTED' && (
-            <button
-              onClick={() => advanceOrderStatus('PREPARING', 'Fresh baking started in batch')}
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold"
-            >
-              2. Cooker: Start Baking
-            </button>
+            isCooker ? (
+              <button
+                onClick={() => advanceOrderStatus('PREPARING', 'Fresh preparation started in batch', 'COOKER')}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1"
+              >
+                <span>👨‍🍳 2. Cooker: Start Baking / Cooking</span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>⏳ Awaiting Cooker to Start Preparation</span>
+                <span className="text-[10px] text-amber-700 font-bold not-italic">(Requires Cooker Role)</span>
+              </div>
+            )
           )}
 
+          {/* Step 3: Cooker Food Ready */}
           {order.status === 'PREPARING' && (
-            <button
-              onClick={() =>
-                advanceOrderStatus(
-                  'READY_FOR_PICKUP',
-                  order.deliveryMode === 'CUSTOMER_PICKUP'
-                    ? 'Food packed and ready for customer pickup at kitchen.'
-                    : 'Dish packed. Smart Rider Radar activated.'
-                )
-              }
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold shadow-xs animate-pulse"
-            >
-              {order.deliveryMode === 'CUSTOMER_PICKUP'
-                ? '3. Food Ready → Ready for Customer Pickup at Kitchen!'
-                : '3. Food Ready → Trigger Smart Rider / Self-Delivery Fallback!'}
-            </button>
+            isCooker ? (
+              <button
+                onClick={() =>
+                  advanceOrderStatus(
+                    'READY_FOR_PICKUP',
+                    order.deliveryMode === 'CUSTOMER_PICKUP'
+                      ? 'Food packed and ready for customer pickup at kitchen.'
+                      : 'Dish packed. Smart Rider Radar activated.',
+                    'COOKER'
+                  )
+                }
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold shadow-2xs transition-all animate-pulse flex items-center gap-1"
+              >
+                <span>
+                  {order.deliveryMode === 'CUSTOMER_PICKUP'
+                    ? '👨‍🍳 3. Cooker: Food Ready → Ready for Customer Pickup!'
+                    : '👨‍🍳 3. Cooker: Food Ready → Trigger Smart Rider Radar!'}
+                </span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>🍳 Kitchen is actively baking / cooking...</span>
+                <span className="text-[10px] text-amber-700 font-bold not-italic">(Requires Cooker Role)</span>
+              </div>
+            )
           )}
 
+          {/* Step 4 (Direct Pickup): Customer or Cooker confirm collection */}
           {order.status === 'READY_FOR_PICKUP' && order.deliveryMode === 'CUSTOMER_PICKUP' && (
-            <button
-              onClick={() => advanceOrderStatus('DELIVERED', 'Customer collected food from kitchen counter.')}
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-green-700 hover:bg-green-800 text-white rounded-lg font-bold shadow-xs"
-            >
-              4. Customer Collected Food → Mark Complete (Unlocks Review)
-            </button>
+            (isCustomer || isCooker) ? (
+              <button
+                onClick={() => advanceOrderStatus('DELIVERED', 'Customer collected food from kitchen counter.', isCustomer ? 'CUSTOMER' : 'COOKER')}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1"
+              >
+                <span>✅ Confirm Food Collected from Kitchen Counter</span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>🏪 Food waiting at kitchen counter for collection</span>
+              </div>
+            )
           )}
 
+          {/* Step 4 (Delivery Mode): Rider or Cooker Pick Up */}
           {(order.status === 'RIDER_ASSIGNED' || (order.status === 'READY_FOR_PICKUP' && order.deliveryMode === 'SELF_DELIVERY')) && (
-            <button
-              onClick={() => advanceOrderStatus('PICKED_UP', 'Collected from home kitchen')}
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold"
-            >
-              4. Rider/Cooker: Pick Up
-            </button>
+            (isRider || (isCooker && order.deliveryMode === 'SELF_DELIVERY')) ? (
+              <button
+                onClick={() => advanceOrderStatus('PICKED_UP', 'Collected from home kitchen', isRider ? 'RIDER' : 'COOKER')}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1"
+              >
+                <span>🛵 4. Rider: Pick Up from Kitchen</span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>🛵 Awaiting Delivery Rider to Pick Up from Kitchen</span>
+                <span className="text-[10px] text-emerald-700 font-bold not-italic">(Requires Rider Role)</span>
+              </div>
+            )
           )}
 
+          {/* Step 5: Rider Start Delivery */}
           {order.status === 'PICKED_UP' && (
-            <button
-              onClick={() => advanceOrderStatus('OUT_FOR_DELIVERY', 'En route to customer')}
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold"
-            >
-              5. Start Delivery
-            </button>
+            isRider ? (
+              <button
+                onClick={() => advanceOrderStatus('OUT_FOR_DELIVERY', 'En route to customer', 'RIDER')}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1"
+              >
+                <span>🛵 5. Rider: Start Delivery (En Route)</span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>📦 Food picked up, awaiting rider departure</span>
+                <span className="text-[10px] text-emerald-700 font-bold not-italic">(Requires Rider Role)</span>
+              </div>
+            )
           )}
 
+          {/* Step 6: Rider Mark Delivered */}
           {order.status === 'OUT_FOR_DELIVERY' && (
-            <button
-              onClick={() => advanceOrderStatus('DELIVERED', 'Safely handed over to customer')}
-              disabled={isUpdatingStatus}
-              className="px-2.5 py-1 bg-green-700 hover:bg-green-800 text-white rounded-lg font-bold shadow-xs"
-            >
-              6. Mark Delivered (Unlocks Review)
-            </button>
+            isRider ? (
+              <button
+                onClick={() => advanceOrderStatus('DELIVERED', 'Safely handed over to customer', 'RIDER')}
+                disabled={isUpdatingStatus}
+                className="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1"
+              >
+                <span>✅ 6. Rider: Mark Delivered</span>
+              </button>
+            ) : (
+              <div className="text-gray-500 italic flex items-center gap-1.5 bg-white/70 px-3 py-1.5 rounded-xl border border-amber-100">
+                <span>🚴 Rider is en route to customer doorstep...</span>
+                <span className="text-[10px] text-emerald-700 font-bold not-italic">(Requires Rider Role)</span>
+              </div>
+            )
           )}
 
+          {/* Complete Status */}
           {order.status === 'DELIVERED' && (
-            <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-md">
-              Order Complete & Delivered
+            <span className="text-emerald-700 font-black bg-emerald-100 px-3 py-1 rounded-xl flex items-center gap-1">
+              <span>🎉 Order Completed & Delivered!</span>
             </span>
           )}
         </div>

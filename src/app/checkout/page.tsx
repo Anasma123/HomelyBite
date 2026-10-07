@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -33,8 +34,10 @@ export default function CheckoutPage() {
     subtotal,
     deliveryMode,
     setDeliveryMode,
-    platformFee,
     deliveryFee: cartDeliveryFee,
+    cookerSelfDeliveryFee,
+    smartRiderDeliveryFee,
+    allowSelfDelivery,
     appliedCoupon,
     discountAmount,
     clearCart,
@@ -92,7 +95,7 @@ export default function CheckoutPage() {
 
   // 100% Synchronous, mathematically consistent fee calculations
   const deliveryFee = deliveryMode === 'CUSTOMER_PICKUP' ? 0 : cartDeliveryFee;
-  const totalPayable = Math.max(0, subtotal + deliveryFee + platformFee - discountAmount);
+  const totalPayable = Math.max(0, subtotal + deliveryFee - discountAmount);
 
   if (items.length === 0) {
     return (
@@ -114,10 +117,67 @@ export default function CheckoutPage() {
     );
   }
 
+  // Require Customer Authentication
+  if (!currentUser) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-6">
+        <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-3xl flex items-center justify-center mx-auto shadow-xs">
+          <UserIcon className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black text-gray-900">Customer Registration Required</h2>
+          <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+            To ensure genuine food safety, verified pickup, and live order tracking with our home cooks, please sign in or register as a customer before placing your order.
+          </p>
+        </div>
+
+        {/* Order Basket Summary Card */}
+        <div className="p-5 bg-white rounded-3xl border border-gray-200 text-left text-xs space-y-2.5 shadow-xs">
+          <div className="flex justify-between items-center text-gray-500 font-bold border-b border-gray-100 pb-2">
+            <span>Dishes in Your Basket</span>
+            <span>{items.reduce((s, i) => s + i.quantity, 0)} Items</span>
+          </div>
+          {items.map((it) => (
+            <div key={it.productId} className="flex justify-between items-center text-gray-800">
+              <span className="font-medium text-gray-900">{it.product.name} × {it.quantity}</span>
+              <span className="font-bold">₹{it.product.price * it.quantity}</span>
+            </div>
+          ))}
+          <div className="pt-2.5 border-t border-gray-100 flex justify-between font-black text-gray-900 text-sm">
+            <span>Total Payable:</span>
+            <span className="text-orange-600">₹{totalPayable}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
+            href="/auth/login?redirect=/checkout"
+            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-6 py-3 rounded-2xl shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+          >
+            Sign In to Account →
+          </Link>
+          <Link
+            href="/auth/register?role=CUSTOMER&redirect=/checkout"
+            className="w-full sm:w-auto border border-gray-200 hover:bg-gray-50 text-gray-800 font-bold text-xs px-6 py-3 rounded-2xl transition-all flex items-center justify-center"
+          >
+            Register as Customer
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage('');
+
+    // Authentication check
+    if (!currentUser) {
+      setErrorMessage('Please sign in or register to place an order.');
+      setIsSubmitting(false);
+      return;
+    }
 
     // Basic validation
     if (!customerName.trim() || !customerPhone.trim()) {
@@ -134,7 +194,7 @@ export default function CheckoutPage() {
 
     try {
       const payload = {
-        customerId: currentUser?.id || `usr-guest-${Date.now()}`,
+        customerId: currentUser.id,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
@@ -206,7 +266,7 @@ export default function CheckoutPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Phone Number (For Order Updates & OTP)</label>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Phone Number (For Order Updates & Delivery)</label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                   <input
@@ -234,23 +294,28 @@ export default function CheckoutPage() {
                 {
                   id: 'PLATFORM_DELIVERY',
                   label: 'Smart Rider Delivery',
-                  desc: 'Fastest available platform rider matched upon food readiness',
+                  desc: 'Fixed platform rider delivery fee set by platform administration (no km charges)',
                   icon: Bike,
-                  fee: '₹30',
+                  fee: `₹${smartRiderDeliveryFee}`,
+                  disabled: false,
                 },
                 {
                   id: 'SELF_DELIVERY',
                   label: 'Cooker Self-Delivery',
-                  desc: 'Directly hand-delivered by the home cooker within local radius',
+                  desc: allowSelfDelivery
+                    ? 'Hand-delivered directly by the home cooker (Fixed dish delivery charge)'
+                    : 'Not offered by cooker for this dish',
                   icon: Truck,
-                  fee: '₹30',
+                  fee: allowSelfDelivery ? `₹${cookerSelfDeliveryFee}` : 'Unavailable',
+                  disabled: !allowSelfDelivery,
                 },
                 {
                   id: 'CUSTOMER_PICKUP',
                   label: 'Direct Pickup',
-                  desc: 'Collect fresh and warm directly from the home kitchen',
+                  desc: 'Collect fresh and warm directly from the home kitchen (₹0 fee)',
                   icon: Store,
                   fee: 'Free',
+                  disabled: false,
                 },
               ].map((opt) => {
                 const Icon = opt.icon;
@@ -259,9 +324,12 @@ export default function CheckoutPage() {
                   <button
                     key={opt.id}
                     type="button"
+                    disabled={opt.disabled}
                     onClick={() => setDeliveryMode(opt.id as DeliveryMode)}
                     className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                      isSelected
+                      opt.disabled
+                        ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-200'
+                        : isSelected
                         ? 'border-orange-600 bg-orange-50/70 shadow-xs ring-2 ring-orange-500/20'
                         : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
@@ -271,7 +339,11 @@ export default function CheckoutPage() {
                         <Icon className={`w-5 h-5 ${isSelected ? 'text-orange-600' : 'text-gray-400'}`} />
                         <span
                           className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                            opt.fee === 'Free' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-900'
+                            opt.disabled
+                              ? 'bg-gray-100 text-gray-500'
+                              : opt.fee === 'Free'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-gray-100 text-gray-900'
                           }`}
                         >
                           {opt.fee}
@@ -590,10 +662,6 @@ export default function CheckoutPage() {
                 <span className={`font-semibold ${deliveryFee === 0 ? 'text-emerald-700 font-bold' : 'text-gray-900'}`}>
                   {deliveryMode === 'CUSTOMER_PICKUP' ? '₹0 (Free Pickup)' : `₹${deliveryFee}`}
                 </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Platform Fee</span>
-                <span className="font-semibold text-gray-900">₹{platformFee}</span>
               </div>
 
               {discountAmount > 0 && (

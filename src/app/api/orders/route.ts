@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const customerId = searchParams.get('customerId');
     const cookerId = searchParams.get('cookerId');
     const riderId = searchParams.get('riderId');
+    const all = searchParams.get('all');
 
     let orders = db.getOrders();
 
@@ -20,6 +21,9 @@ export async function GET(request: Request) {
       orders = orders.filter((o) => o.cookerId === cookerId);
     } else if (riderId) {
       orders = orders.filter((o) => o.assignedRiderId === riderId);
+    } else if (all !== 'true') {
+      // Prevent data leakage: do not return all orders unless explicit all=true
+      orders = [];
     }
 
     return NextResponse.json({ success: true, count: orders.length, orders });

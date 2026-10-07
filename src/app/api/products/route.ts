@@ -61,6 +61,8 @@ export async function POST(request: Request) {
       stockCount = 10,
       dailyCapacity = 15,
       supportsPreorder = true,
+      allowSelfDelivery = true,
+      selfDeliveryFee = 30,
       ingredients = [],
     } = body;
 
@@ -141,6 +143,8 @@ export async function POST(request: Request) {
       dailyCapacity: Number(dailyCapacity),
       bookedToday: 0,
       supportsPreorder: Boolean(supportsPreorder),
+      allowSelfDelivery: Boolean(allowSelfDelivery),
+      selfDeliveryFee: Number(selfDeliveryFee) || 0,
       status: 'APPROVED', // Default to approved for seamless live store operation
       ingredients,
       detectedAllergens,

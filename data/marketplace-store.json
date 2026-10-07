@@ -1434,10 +1434,10 @@
     }
   ],
   "settings": {
-    "commissionRatePercent": 10,
+    "commissionRatePercent": 0,
     "baseDeliveryFee": 30,
-    "deliveryFeePerKm": 10,
-    "platformFee": 5,
+    "deliveryFeePerKm": 0,
+    "platformFee": 0,
     "relevanceWeight": 40,
     "distanceWeight": 20,
     "ratingWeight": 15,
@@ -1445,9 +1445,43 @@
     "popularityWeight": 10,
     "cookerQualityWeight": 5,
     "otpExpiryMinutes": 5,
-    "otpCooldownSeconds": 60
+    "otpCooldownSeconds": 60,
+    "smartRiderDeliveryFee": 30
   },
   "auditLogs": [
+    {
+      "id": "log-1791405107962",
+      "action": "PRODUCT_DELETED",
+      "actorId": "cooker",
+      "actorEmail": "cooker@kitchen",
+      "actorRole": "COOKER",
+      "targetType": "PRODUCT",
+      "targetId": "prod-1791405099723",
+      "details": "Product prod-1791405099723 was deleted from the kitchen menu.",
+      "timestamp": "2026-10-07T20:31:47.962Z"
+    },
+    {
+      "id": "log-1791405099725",
+      "action": "PRODUCT_CREATED",
+      "actorId": "usr-cooker-1",
+      "actorEmail": "Anas Artisanal Home Bakery",
+      "actorRole": "COOKER",
+      "targetType": "PRODUCT",
+      "targetId": "prod-1791405099723",
+      "details": "Product \"Malabar Kozhi Roast (Special)\" created with calculated nutrition and allergen tags.",
+      "timestamp": "2026-10-07T20:31:39.725Z"
+    },
+    {
+      "id": "log-1791405090438",
+      "action": "PLATFORM_SETTINGS_UPDATED",
+      "actorId": "usr-admin-1",
+      "actorEmail": "admin@homelybite.com",
+      "actorRole": "ADMIN",
+      "targetType": "SETTING",
+      "targetId": "global",
+      "details": "Platform settings updated: {\"smartRiderDeliveryFee\":30,\"baseDeliveryFee\":30,\"commissionRatePercent\":0,\"platformFee\":0,\"deliveryFeePerKm\":0}",
+      "timestamp": "2026-10-07T20:31:30.438Z"
+    },
     {
       "id": "log-1791403382737",
       "action": "PLATFORM_SETTINGS_UPDATED",

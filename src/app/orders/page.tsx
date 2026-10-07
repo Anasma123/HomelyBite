@@ -21,17 +21,55 @@ export default function CustomerOrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/orders')
+    if (!currentUser) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    fetch(`/api/orders?customerId=${currentUser.id}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.success && data.orders) {
-          // If customer logged in, filter or show all user's orders
           setOrders(data.orders);
+        } else {
+          setOrders([]);
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        setOrders([]);
+      })
       .finally(() => setLoading(false));
   }, [currentUser]);
+
+  if (!currentUser) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-3xl flex items-center justify-center mx-auto mb-2">
+          <ShoppingBag className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-extrabold text-gray-900">Your Order History</h2>
+        <p className="text-xs text-gray-500 max-w-md mx-auto">
+          Please sign in to your customer account to view your past orders, track active home kitchen deliveries, and leave cook reviews.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
+            href="/auth/login?redirect=/orders"
+            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-xs"
+          >
+            Sign In to Account →
+          </Link>
+          <Link
+            href="/auth/register?role=CUSTOMER&redirect=/orders"
+            className="w-full sm:w-auto border border-gray-200 hover:bg-gray-50 text-gray-700 px-6 py-2.5 rounded-2xl text-xs font-bold transition-all"
+          >
+            Create Customer Account
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">

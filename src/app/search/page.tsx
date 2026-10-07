@@ -361,7 +361,7 @@ function RequestBakerModal({
   onSuccess: (req: CustomFoodRequest) => void;
 }) {
   const { currentUser } = useAuth();
-  const [servings, setServings] = useState(2);
+  const [quantity, setQuantity] = useState(1);
   const [customerName, setCustomerName] = useState(currentUser?.name || '');
   const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '');
   const [street, setStreet] = useState('');
@@ -381,6 +381,59 @@ function RequestBakerModal({
 
   if (!isOpen || !recipe) return null;
 
+  // Enforce customer account login / registration
+  if (!currentUser) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-5 border border-gray-100 text-center relative">
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 p-1.5 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 text-sm"
+          >
+            ✕
+          </button>
+          <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-3xl flex items-center justify-center mx-auto shadow-xs">
+            <ChefHat className="w-8 h-8" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="font-extrabold text-lg text-gray-900">Customer Account Required</h3>
+            <p className="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">
+              To request home bakers to prepare custom recipes and receive personal quotes & baking time, please sign in or register as a customer.
+            </p>
+          </div>
+
+          <div className="p-3.5 bg-orange-50 rounded-2xl border border-orange-100 text-left text-xs">
+            <span className="text-[10px] uppercase font-bold text-orange-800 tracking-wider block">Selected Recipe</span>
+            <strong className="text-gray-900 font-bold block mt-0.5">{recipe.recipeName}</strong>
+            <span className="text-gray-500 text-[11px]">{recipe.macros.calories} kcal • {recipe.macros.protein}g Protein per serving</span>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <Link
+              href="/auth/login?redirect=/search"
+              className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-2xl text-xs transition-all shadow-xs"
+            >
+              Sign In to Account →
+            </Link>
+            <Link
+              href="/auth/register?role=CUSTOMER&redirect=/search"
+              className="w-full py-3 border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-2xl text-xs transition-all"
+            >
+              Register as Customer
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-xs text-gray-400 hover:text-gray-600 py-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -394,13 +447,14 @@ function RequestBakerModal({
           ingredients: recipe.ingredients,
           cookingSteps: recipe.stepByStepInstructions.map((s) => `${s.stepNumber}. ${s.title}: ${s.instruction}`),
           macros: recipe.macros,
-          servings,
-          customerName,
-          customerPhone,
-          deliveryAddress: { street, city, pincode },
+          servings: quantity,
+          customerId: currentUser.id,
+          customerName: customerName.trim() || currentUser.name,
+          customerPhone: customerPhone.trim() || currentUser.phone || '+91 9846012345',
+          deliveryAddress: { street: street.trim(), city, pincode },
           specialNotes,
           cookerId: selectedCooker,
-          cookerStoreName: 'Anas Artisanal Home Bakery',
+          cookerStoreName: selectedCooker === 'ALL' ? 'Broadcast to All Nearby Bakers' : 'Anas Artisanal Home Bakery',
         }),
       });
       const data = await res.json();
@@ -444,15 +498,15 @@ function RequestBakerModal({
               <span className="text-xs font-mono font-bold text-gray-500">#{submittedReq.requestNumber}</span>
               <h4 className="text-lg font-black text-gray-900 mt-1">Request Sent to Baker!</h4>
               <p className="text-xs text-gray-600 mt-1 max-w-xs mx-auto">
-                Your custom dish "{recipe.recipeName}" ({servings} servings) has been submitted to the Baker.
+                Your custom dish "{recipe.recipeName}" ({quantity} {quantity === 1 ? 'serving' : 'servings'}) has been submitted.
               </p>
             </div>
             <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200 text-xs text-orange-950 text-left space-y-1.5">
               <strong className="block font-bold">What happens next:</strong>
               <ol className="list-decimal pl-4 space-y-1 text-[11px] text-gray-700">
                 <li>Baker reviews recipe & quotes preparation price and baking time.</li>
-                <li>You receive notification to confirm the quote.</li>
-                <li>Baker starts cooking and delivers straight to your doorstep!</li>
+                <li>You receive notification on your customer account to accept the quote.</li>
+                <li>Baker prepares it fresh and delivers straight to your doorstep!</li>
               </ol>
             </div>
             <button
@@ -460,92 +514,98 @@ function RequestBakerModal({
               onClick={onClose}
               className="w-full py-3 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all"
             >
-              Done & Track Status
+              Done
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Dish Card Summary */}
-            <div className="p-3 bg-orange-50 rounded-2xl border border-orange-100 flex items-center justify-between">
+            <div className="p-3.5 bg-orange-50 rounded-2xl border border-orange-100 flex items-center justify-between">
               <div>
-                <strong className="text-gray-900 block font-bold">{recipe.recipeName}</strong>
+                <strong className="text-gray-900 block font-bold text-xs">{recipe.recipeName}</strong>
                 <span className="text-[11px] text-gray-500">
-                  {recipe.macros.calories} kcal • {recipe.macros.protein}g Protein
+                  {recipe.macros.calories} kcal • {recipe.macros.protein}g Protein per serving
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-orange-700 bg-white px-2.5 py-1 rounded-lg border border-orange-200">
-                {servings} Servings
+              <span className="text-xs font-black text-orange-700 bg-white px-2.5 py-1 rounded-lg border border-orange-200 shadow-2xs">
+                Qty: {quantity}
               </span>
             </div>
 
-            {/* Servings */}
+            {/* Clean Quantity Selector */}
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1.5">Select Portions / Servings:</label>
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 4, 6].map((num) => (
+              <label className="text-xs font-bold text-gray-700 block mb-1.5">Enter Quantity to Prepare:</label>
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center border border-gray-200 rounded-2xl bg-gray-50 p-1">
                   <button
-                    key={num}
                     type="button"
-                    onClick={() => setServings(num)}
-                    className={`py-2 rounded-xl font-bold border transition-all ${
-                      servings === num
-                        ? 'bg-orange-600 text-white border-orange-600 shadow-2xs'
-                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-orange-300'
-                    }`}
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    className="w-8 h-8 rounded-xl bg-white hover:bg-gray-100 text-gray-800 font-black flex items-center justify-center shadow-2xs transition-all disabled:opacity-40"
                   >
-                    {num} {num === 1 ? 'Portion' : 'Portions'}
+                    -
                   </button>
-                ))}
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                    className="w-14 text-center font-black text-sm bg-transparent text-gray-900 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.min(50, q + 1))}
+                    className="w-8 h-8 rounded-xl bg-white hover:bg-gray-100 text-gray-800 font-black flex items-center justify-center shadow-2xs transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+                <span className="text-xs text-gray-500 font-semibold">
+                  {quantity === 1 ? '1 Dish / Serving' : `${quantity} Dishes / Servings`}
+                </span>
               </div>
             </div>
 
             {/* Select Baker */}
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1.5">Select Home Baker / Kitchen:</label>
+              <label className="text-xs font-bold text-gray-700 block mb-1">Select Home Baker / Kitchen:</label>
               <select
                 value={selectedCooker}
                 onChange={(e) => setSelectedCooker(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:border-orange-500"
+                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:border-orange-500"
               >
                 <option value="cook-prof-1">⭐ Anas Artisanal Home Bakery (Panampilly Nagar, Kochi)</option>
                 <option value="ALL">📢 Broadcast to All Verified Home Bakers Nearby</option>
               </select>
             </div>
 
-            {/* Customer Details */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-gray-600 font-semibold block mb-1">Your Name</label>
-                <input
-                  type="text"
-                  required
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900"
-                />
+            {/* Customer Details (Auto-filled from Account) */}
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
+                  {currentUser.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div>
+                  <span className="font-bold text-gray-900 block text-xs">{currentUser.name}</span>
+                  <span className="text-[11px] text-gray-500">{currentUser.phone || currentUser.email}</span>
+                </div>
               </div>
-              <div>
-                <label className="text-gray-600 font-semibold block mb-1">Phone Number</label>
-                <input
-                  type="text"
-                  required
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900"
-                />
-              </div>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
+                Verified Account
+              </span>
             </div>
 
             {/* Delivery Address */}
             <div>
-              <label className="text-gray-600 font-semibold block mb-1">Delivery Address</label>
+              <label className="text-xs font-bold text-gray-700 block mb-1">Delivery Address & Landmark</label>
               <input
                 type="text"
                 required
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                placeholder="Street address & flat / building"
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 mb-2"
+                placeholder="Flat/House No, Building, Street, Panampilly Nagar"
+                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white mb-2"
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -569,13 +629,13 @@ function RequestBakerModal({
 
             {/* Special Instructions */}
             <div>
-              <label className="text-gray-600 font-semibold block mb-1">Special Dietary / Allergy Notes (Optional)</label>
+              <label className="text-xs font-bold text-gray-700 block mb-1">Special Dietary / Allergy Notes (Optional)</label>
               <input
                 type="text"
                 value={specialNotes}
                 onChange={(e) => setSpecialNotes(e.target.value)}
                 placeholder="e.g. Less oil, use cold-pressed ghee, extra spicy..."
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900"
+                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-orange-500"
               />
             </div>
 

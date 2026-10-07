@@ -29,19 +29,20 @@ export interface DeliveryAssignmentResult {
 
 export class DeliveryService {
   /**
-   * Calculates distance-based delivery fee in INR
+   * Calculates delivery fee in INR:
+   * - CUSTOMER_PICKUP: Free (₹0)
+   * - SELF_DELIVERY: Cooker fixed dish self-delivery fee (no km calculation)
+   * - PLATFORM_DELIVERY: Admin fixed Smart Rider delivery fee (no km calculation)
    */
   public static calculateDeliveryFee(
     distanceKm: number,
     mode: DeliveryMode,
-    baseFee: number = 30,
-    feePerKm: number = 10
+    adminRiderFee: number = 30,
+    cookerSelfDeliveryFee: number = 30
   ): number {
     if (mode === 'CUSTOMER_PICKUP') return 0;
-    const safeBaseFee = Math.max(0, Number(baseFee));
-    const safeFeePerKm = Math.max(0, Number(feePerKm));
-    if (distanceKm <= 5) return safeBaseFee;
-    return Math.round(safeBaseFee + (distanceKm - 5) * safeFeePerKm);
+    if (mode === 'SELF_DELIVERY') return Math.max(0, Number(cookerSelfDeliveryFee));
+    return Math.max(0, Number(adminRiderFee));
   }
 
   /**

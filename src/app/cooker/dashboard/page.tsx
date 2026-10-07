@@ -140,6 +140,8 @@ export default function CookerDashboard() {
   const [newProdWaitLimit, setNewProdWaitLimit] = useState(60);
   const [newProdCapacity, setNewProdCapacity] = useState(15);
   const [newProdServings, setNewProdServings] = useState(4);
+  const [newProdAllowSelfDelivery, setNewProdAllowSelfDelivery] = useState(true);
+  const [newProdSelfDeliveryFee, setNewProdSelfDeliveryFee] = useState('30');
   const [newProdIngredients, setNewProdIngredients] = useState<ProductIngredientItem[]>([
     { id: '1', name: 'All-Purpose Flour (Maida)', quantity: 200, unit: 'g' },
     { id: '2', name: 'Pure Butter (Dairy)', quantity: 100, unit: 'g' },
@@ -434,6 +436,8 @@ export default function CookerDashboard() {
           prepTimeMinutes: Number(newProdPrepTime),
           maxWaitLimitMinutes: Number(newProdWaitLimit),
           dailyCapacity: Number(newProdCapacity),
+          allowSelfDelivery: newProdAllowSelfDelivery,
+          selfDeliveryFee: Number(newProdSelfDeliveryFee) || 0,
           ingredients: newProdIngredients,
           imageUrls:
             newProdImages.length > 0
@@ -448,6 +452,8 @@ export default function CookerDashboard() {
         setNewProdName('');
         setNewProdPrice('');
         setNewProdDesc('');
+        setNewProdAllowSelfDelivery(true);
+        setNewProdSelfDeliveryFee('30');
         setNewProdImages([]);
         setCalculatedNutrition(null);
         setActiveTab('PRODUCTS');
@@ -1330,6 +1336,54 @@ export default function CookerDashboard() {
               />
             </div>
 
+            {/* Cooker Self-Delivery Option for this Dish */}
+            <div className="p-4 bg-orange-50/80 border border-orange-200 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-orange-600" />
+                  <div>
+                    <span className="text-xs font-bold text-gray-900 block">Offer Cooker Self-Delivery for this Dish</span>
+                    <span className="text-[11px] text-gray-500">Enable if you can personally hand-deliver this food locally</span>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newProdAllowSelfDelivery}
+                    onChange={(e) => setNewProdAllowSelfDelivery(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
+                </label>
+              </div>
+
+              {newProdAllowSelfDelivery && (
+                <div className="pt-2 border-t border-orange-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-gray-900 block">
+                      Cooker Self-Delivery Fee (Fixed ₹)
+                    </label>
+                    <span className="text-[11px] text-gray-600">
+                      Enter the exact fixed fee the customer pays you upon delivery (No km calculations).
+                    </span>
+                  </div>
+                  <div className="relative w-36 shrink-0">
+                    <input
+                      type="number"
+                      min="0"
+                      step="5"
+                      required={newProdAllowSelfDelivery}
+                      value={newProdSelfDeliveryFee}
+                      onChange={(e) => setNewProdSelfDeliveryFee(e.target.value)}
+                      placeholder="e.g. 30"
+                      className="w-full text-xs font-bold bg-white border border-orange-300 rounded-xl p-2.5 pr-8 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    />
+                    <span className="absolute right-3 top-2.5 text-gray-400 font-bold">₹</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Dish Photographs / Image Upload Section */}
             <div className="space-y-3 pt-2 border-t border-gray-100">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1901,13 +1955,13 @@ export default function CookerDashboard() {
               <span className="text-xs text-gray-400 block font-medium">Gross Orders Value</span>
               <span className="text-2xl font-black text-gray-900">₹{totalGrossSales}</span>
             </div>
-            <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
-              <span className="text-xs text-amber-700 block font-medium">Platform Fee ({platformSettings?.commissionRatePercent ?? 10}%)</span>
-              <span className="text-2xl font-black text-amber-700">₹{totalPlatformCommission}</span>
-            </div>
             <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-              <span className="text-xs text-emerald-700 block font-medium">Net Payout to Kitchen</span>
-              <span className="text-2xl font-black text-emerald-700">₹{totalNetEarnings}</span>
+              <span className="text-xs text-emerald-700 block font-medium">Platform Fee (0% - Free)</span>
+              <span className="text-2xl font-black text-emerald-700">₹0</span>
+            </div>
+            <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
+              <span className="text-xs text-orange-700 block font-medium">Net Payout to Kitchen (100% of Food Sales)</span>
+              <span className="text-2xl font-black text-orange-700">₹{totalGrossSales}</span>
             </div>
           </div>
 
@@ -1918,7 +1972,7 @@ export default function CookerDashboard() {
                   <th className="pb-3">Order Number</th>
                   <th className="pb-3">Date</th>
                   <th className="pb-3 text-right">Gross Amount</th>
-                  <th className="pb-3 text-right">Commission</th>
+                  <th className="pb-3 text-right">Commission Cut</th>
                   <th className="pb-3 text-right">Net Payout</th>
                   <th className="pb-3 text-center">Status</th>
                 </tr>
@@ -1929,11 +1983,11 @@ export default function CookerDashboard() {
                     <td className="py-3 font-semibold text-gray-900">#{ord.orderNumber}</td>
                     <td className="py-3 text-gray-500">{new Date(ord.createdAt).toLocaleDateString()}</td>
                     <td className="py-3 text-right">₹{ord.subtotal}</td>
-                    <td className="py-3 text-right text-amber-700">-₹{ord.platformCommission}</td>
-                    <td className="py-3 text-right font-bold text-emerald-700">₹{ord.netCookerEarnings}</td>
+                    <td className="py-3 text-right text-emerald-600 font-semibold">₹0 (0%)</td>
+                    <td className="py-3 text-right font-bold text-gray-900">₹{ord.subtotal}</td>
                     <td className="py-3 text-center">
                       <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-semibold">
-                        Credited
+                        Credited (100%)
                       </span>
                     </td>
                   </tr>

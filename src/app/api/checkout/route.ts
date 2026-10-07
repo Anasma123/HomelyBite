@@ -119,20 +119,17 @@ export async function POST(request: Request) {
         );
       }
 
-      const settings = db.getSettings();
-      const baseFee = Number(settings.baseDeliveryFee ?? 30);
-      const feePerKm = Number(settings.deliveryFeePerKm ?? 10);
-
-      serverDeliveryFee = DeliveryService.calculateDeliveryFee(
-        eligibility.distanceKm,
-        deliveryMode as DeliveryMode,
-        baseFee,
-        feePerKm
-      );
+      if (deliveryMode === 'SELF_DELIVERY') {
+        const firstProd = items[0]?.productId ? db.getProductById(items[0].productId) : null;
+        serverDeliveryFee = firstProd?.selfDeliveryFee !== undefined ? Number(firstProd.selfDeliveryFee) : 30;
+      } else {
+        const settings = db.getSettings();
+        serverDeliveryFee = Number(settings.smartRiderDeliveryFee ?? settings.baseDeliveryFee ?? 30);
+      }
     }
 
-    const currentSettings = db.getSettings();
-    const platformFee = Number(currentSettings.platformFee ?? 5);
+    // Customer Platform Tech Fee is completely disabled / 0
+    const platformFee = 0;
 
     // 3. Server-side coupon verification
     let discountAmount = 0;
@@ -152,12 +149,12 @@ export async function POST(request: Request) {
       }
     }
 
-    const totalAmount = Math.max(0, serverSubtotal + serverDeliveryFee + platformFee - discountAmount);
+    const totalAmount = Math.max(0, serverSubtotal + serverDeliveryFee - discountAmount);
 
     // 4. Server-side platform commission & cooker earnings calculation
-    const commissionPercent = Number(currentSettings.commissionRatePercent ?? 10);
-    const platformCommission = Math.round((serverSubtotal * commissionPercent) / 100);
-    const netCookerEarnings = serverSubtotal - platformCommission;
+    // Platform commission rate is 0% (Cookers keep 100% of food revenue)
+    const platformCommission = 0;
+    const netCookerEarnings = serverSubtotal;
 
     const cookerUser = cooker.userId ? db.getUserById(cooker.userId) : null;
     const cookerPhone = cookerUser?.phone || '+91 9846012345';

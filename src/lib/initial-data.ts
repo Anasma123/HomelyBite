@@ -729,10 +729,11 @@ export const INITIAL_COUPONS: Coupon[] = [
 ];
 
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
-  commissionRatePercent: 10,
+  smartRiderDeliveryFee: 30,
+  commissionRatePercent: 0,
   baseDeliveryFee: 30,
-  deliveryFeePerKm: 10,
-  platformFee: 5,
+  deliveryFeePerKm: 0,
+  platformFee: 0,
   relevanceWeight: 40,
   distanceWeight: 20,
   ratingWeight: 15,

@@ -216,6 +216,8 @@ export interface Product {
   dailyCapacity: number;
   bookedToday: number;
   supportsPreorder: boolean;
+  allowSelfDelivery?: boolean; // Cooker offers self-delivery for this dish
+  selfDeliveryFee?: number; // Fixed self-delivery fee set by cooker (e.g. ₹35)
   status: ProductStatus;
   ingredients: ProductIngredientItem[];
   detectedAllergens: string[];
@@ -353,18 +355,19 @@ export interface AuditLog {
 }
 
 export interface PlatformSettings {
-  commissionRatePercent: number; // e.g. 10%
-  baseDeliveryFee: number; // e.g. 30
-  deliveryFeePerKm: number; // e.g. 10
-  platformFee: number; // e.g. 5
+  smartRiderDeliveryFee?: number; // Fixed Smart Rider delivery fee set by Admin (₹)
+  commissionRatePercent?: number; // legacy (disabled/0%)
+  baseDeliveryFee?: number; // fallback / alias for smartRiderDeliveryFee
+  deliveryFeePerKm?: number; // legacy (disabled/0)
+  platformFee?: number; // legacy customer tech fee (disabled/0)
   relevanceWeight: number; // 40
   distanceWeight: number; // 20
   ratingWeight: number; // 15
   availabilityWeight: number; // 10
   popularityWeight: number; // 10
   cookerQualityWeight: number; // 5
-  otpExpiryMinutes: number; // 5
-  otpCooldownSeconds: number; // 60
+  otpExpiryMinutes?: number; // legacy
+  otpCooldownSeconds?: number; // legacy
 }
 
 export interface OTPRecord {
