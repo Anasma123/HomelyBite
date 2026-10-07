@@ -9,6 +9,8 @@ import {
   ChefHat,
   ShoppingBag,
   Bike,
+  Camera,
+  UploadCloud,
 } from 'lucide-react';
 
 function RegisterPageContent() {
@@ -26,6 +28,7 @@ function RegisterPageContent() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
 
   // Cooker specific fields
   const [storeName, setStoreName] = useState('');
@@ -59,6 +62,7 @@ function RegisterPageContent() {
           phone,
           password,
           role,
+          avatarUrl,
           storeName,
           bio,
           address,
@@ -192,6 +196,65 @@ function RegisterPageContent() {
               placeholder="••••••••"
               className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
             />
+          </div>
+
+          {/* Profile Photo (Optional) */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-gray-700 block">
+                Profile Photo <span className="text-gray-400 font-normal">(Optional)</span>
+              </label>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl('')}
+                  className="text-[10px] text-red-500 hover:underline"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0 shadow-2xs">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-5 h-5 text-gray-400" />
+                )}
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <input
+                  type="text"
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="Paste image URL or upload from device..."
+                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2 text-gray-900 focus:outline-none focus:border-orange-500"
+                />
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer text-[11px] font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
+                    <UploadCloud className="w-3 h-3" />
+                    <span>Upload photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setAvatarUrl(ev.target?.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                  <span className="text-[10px] text-gray-400">JPG, PNG, WebP (Not mandatory)</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Extra Cooker Store Details */}

@@ -1,4 +1,5 @@
 export type UserRole = 'CUSTOMER' | 'COOKER' | 'RIDER' | 'ADMIN';
+export type UserStatus = 'ACTIVE' | 'FROZEN' | 'SUSPENDED';
 
 export interface User {
   id: string;
@@ -8,6 +9,8 @@ export interface User {
   passwordHash?: string;
   role: UserRole;
   isVerified: boolean;
+  status?: UserStatus;
+  isFrozen?: boolean;
   avatarUrl?: string;
   createdAt: string;
   updatedAt: string;

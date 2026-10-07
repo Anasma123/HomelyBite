@@ -144,6 +144,40 @@ export const db = {
     }
     return null;
   },
+  toggleUserFreeze: (id: string) => {
+    const s = loadState();
+    const idx = s.users.findIndex((u) => u.id === id);
+    if (idx !== -1) {
+      const currentFrozen = !!s.users[idx].isFrozen;
+      const nextFrozen = !currentFrozen;
+      s.users[idx] = {
+        ...s.users[idx],
+        isFrozen: nextFrozen,
+        status: nextFrozen ? 'FROZEN' : 'ACTIVE',
+        updatedAt: new Date().toISOString(),
+      };
+      saveState();
+      return s.users[idx];
+    }
+    return null;
+  },
+  deleteUser: (id: string) => {
+    const s = loadState();
+    const user = s.users.find((u) => u.id === id);
+    if (!user) return false;
+    // Don't delete the platform admin
+    if (user.role === 'ADMIN' && (user.email === 'silu@homelybite.com' || user.email === 'silu@homefood.local')) {
+      return false;
+    }
+    s.users = s.users.filter((u) => u.id !== id);
+    if (user.role === 'COOKER') {
+      s.cookers = s.cookers.filter((c) => c.userId !== id);
+    } else if (user.role === 'RIDER') {
+      s.riders = s.riders.filter((r) => r.userId !== id);
+    }
+    saveState();
+    return true;
+  },
 
   // Cookers
   getCookers: () => loadState().cookers,
@@ -205,6 +239,16 @@ export const db = {
       return s.categories[idx];
     }
     return null;
+  },
+  deleteCategory: (id: string) => {
+    const s = loadState();
+    const countBefore = s.categories.length;
+    s.categories = s.categories.filter((c) => c.id !== id);
+    if (s.categories.length !== countBefore) {
+      saveState();
+      return true;
+    }
+    return false;
   },
 
   // Tags

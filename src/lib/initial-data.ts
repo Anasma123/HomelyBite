@@ -308,15 +308,17 @@ export const MASTER_INGREDIENTS: MasterIngredient[] = [
   },
 ];
 
-// ONLY 1 Default Admin User (Silu, Password: 123)
+// ONLY 1 Default Admin User (Username: silu, Password: 12345)
 export const INITIAL_USERS: User[] = [
   {
     id: 'usr-admin-1',
     name: 'Silu (Platform Administrator)',
-    email: 'silu@homefood.local',
+    email: 'silu@homelybite.com',
     phone: '+91 9876543210',
     role: 'ADMIN',
     isVerified: true,
+    status: 'ACTIVE',
+    isFrozen: false,
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

@@ -99,9 +99,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-100 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400">
-          <p>© 2026 HomeFood Marketplace. All rights reserved.</p>
-          <p className="mt-2 sm:mt-0">Crafted with clean Light Theme aesthetics.</p>
+        <div className="border-t border-gray-100 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500">
+          <p>© 2026 HomelyBite. All rights reserved.</p>
+          <p className="mt-2 sm:mt-0 font-medium">
+            Developed by <span className="font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">Ayisha naswa</span>
+          </p>
         </div>
       </div>
     </footer>

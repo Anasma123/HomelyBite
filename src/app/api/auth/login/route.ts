@@ -12,11 +12,11 @@ export async function POST(request: Request) {
 
     const input = (email || '').trim().toLowerCase();
 
-    // Check for user by exact email or admin alias ('silu', 'admin', 'silu@homefood.local', 'admin@homefood.local')
+    // Check for user by exact email or admin alias ('silu', 'admin', 'silu@homelybite.com', 'silu@homefood.local', 'admin@homefood.local')
     const users = db.getUsers();
     let user = users.find((u) => u.email.toLowerCase() === input);
 
-    if (!user && (input === 'silu' || input === 'admin' || input === 'silu@homefood.local' || input === 'admin@homefood.local')) {
+    if (!user && (input === 'silu' || input === 'admin' || input === 'silu@homelybite.com' || input === 'silu@homefood.local' || input === 'admin@homefood.local')) {
       user = users.find((u) => u.role === 'ADMIN');
     }
 
@@ -24,10 +24,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'User not found. Please register or check your credentials.' }, { status: 404 });
     }
 
-    // Password validation for Admin
+    // Freeze check: Disallow frozen users from logging in
+    if (user.isFrozen || user.status === 'FROZEN') {
+      return NextResponse.json({
+        success: false,
+        message: 'Your account has been frozen by the Platform Administrator. Please contact support.',
+      }, { status: 403 });
+    }
+
+    // Password validation for Admin (Username: silu, Password: 12345)
     if (user.role === 'ADMIN') {
-      if (password && password !== '123') {
-        return NextResponse.json({ success: false, message: 'Incorrect password! Admin password is "123".' }, { status: 401 });
+      if (password !== '12345') {
+        return NextResponse.json({ success: false, message: 'Invalid credentials. Please enter the correct password.' }, { status: 401 });
       }
     }
 

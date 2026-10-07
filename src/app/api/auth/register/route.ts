@@ -36,7 +36,9 @@ export async function POST(request: Request) {
       phone,
       role: userRole,
       isVerified: true,
-      avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=ea580c`,
+      status: 'ACTIVE',
+      isFrozen: false,
+      avatarUrl: body.avatarUrl?.trim() || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=ea580c`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

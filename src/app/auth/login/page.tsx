@@ -33,7 +33,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (data.success && data.user) {
@@ -52,26 +52,6 @@ export default function LoginPage() {
     }
   };
 
-  const loginAsDemo = async (demoEmail: string, destination: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: demoEmail }),
-      });
-      const data = await res.json();
-      if (data.success && data.user) {
-        loginUser(data.user, data.cooker, data.rider);
-        router.push(destination);
-      }
-    } catch {
-      setErrorMessage('Could not log in as demo persona.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="max-w-md mx-auto px-4 py-12 space-y-6">
       <div className="text-center space-y-2">
@@ -79,7 +59,7 @@ export default function LoginPage() {
           <UtensilsCrossed className="w-6 h-6" />
         </div>
         <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-          Welcome to HomeFood
+          Welcome to HomelyBite
         </h1>
         <p className="text-xs text-gray-500">
           Sign in to access your culinary dashboard or customer orders
@@ -87,27 +67,6 @@ export default function LoginPage() {
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-6">
-        {/* Admin Credential Notice */}
-        <div className="p-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0" />
-            <div>
-              <span className="font-bold text-indigo-950 block">Platform Administrator</span>
-              <span className="text-[11px] text-indigo-700">Username: <code className="bg-indigo-100/80 px-1 py-0.5 rounded font-mono font-bold">silu</code> | Password: <code className="bg-indigo-100/80 px-1 py-0.5 rounded font-mono font-bold">123</code></span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setEmail('silu');
-              setPassword('123');
-            }}
-            className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white border border-indigo-200 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 shadow-2xs transition-colors shrink-0"
-          >
-            Auto-Fill Admin
-          </button>
-        </div>
-
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-gray-700 block mb-1">Username / Email Address</label>
@@ -117,7 +76,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. silu or your registered email"
+                placeholder="Enter your username or email"
                 className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
               />
               <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -132,7 +91,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="•••••••• (Admin password: 123)"
+                placeholder="••••••••"
                 className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
               />
               <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />

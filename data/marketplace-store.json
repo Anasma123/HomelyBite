@@ -3,91 +3,18 @@
     {
       "id": "usr-admin-1",
       "name": "Silu (Platform Administrator)",
-      "email": "silu@homefood.local",
+      "email": "silu@homelybite.com",
       "phone": "+91 9876543210",
       "role": "ADMIN",
       "isVerified": true,
+      "status": "ACTIVE",
+      "isFrozen": false,
       "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T09:18:52.682Z",
-      "updatedAt": "2026-10-07T09:18:52.682Z"
-    },
-    {
-      "id": "usr-1791364973743",
-      "name": "naswa",
-      "email": "naswa@gmail.com",
-      "phone": "5632145203",
-      "role": "COOKER",
-      "isVerified": true,
-      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=naswa&backgroundColor=ea580c",
-      "createdAt": "2026-10-07T09:22:53.743Z",
-      "updatedAt": "2026-10-07T09:22:53.743Z"
-    },
-    {
-      "id": "usr-1791368950638",
-      "name": "Laila Homemade",
-      "email": "laila@kitchen.test",
-      "phone": "9876543210",
-      "role": "COOKER",
-      "isVerified": true,
-      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=Laila%20Homemade&backgroundColor=ea580c",
-      "createdAt": "2026-10-07T10:29:10.638Z",
-      "updatedAt": "2026-10-07T10:29:10.638Z"
+      "createdAt": "2026-10-07T12:57:29.544Z",
+      "updatedAt": "2026-10-07T12:57:29.544Z"
     }
   ],
-  "cookers": [
-    {
-      "id": "cook-1791364973744",
-      "userId": "usr-1791364973743",
-      "storeName": "Chemboott cokker",
-      "bio": "very tasty",
-      "logoUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80",
-      "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
-      "status": "APPROVED",
-      "rating": 5,
-      "totalReviews": 0,
-      "totalOrders": 0,
-      "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
-      "address": "poovattuparamba",
-      "latitude": 9.9675,
-      "longitude": 76.2995,
-      "platformDeliveryEnabled": true,
-      "selfDeliveryEnabled": true,
-      "customerPickupEnabled": true,
-      "selfDeliveryRadiusKm": 5,
-      "platformDeliveryRadiusKm": 10,
-      "minimumOrderValue": 200,
-      "averagePrepTimeMinutes": 45,
-      "maxDailyCapacity": 15,
-      "isOpenToday": true,
-      "openingHours": "10:00 AM - 08:00 PM"
-    },
-    {
-      "id": "cook-1791368950646",
-      "userId": "usr-1791368950638",
-      "storeName": "Lailas Malabar Oven",
-      "bio": "Freshly made homemade food prepared with love and wholesome ingredients.",
-      "logoUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80",
-      "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
-      "status": "APPROVED",
-      "rating": 5,
-      "totalReviews": 0,
-      "totalOrders": 0,
-      "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
-      "address": "Kochi, Kerala",
-      "latitude": 9.9675,
-      "longitude": 76.2995,
-      "platformDeliveryEnabled": true,
-      "selfDeliveryEnabled": true,
-      "customerPickupEnabled": true,
-      "selfDeliveryRadiusKm": 5,
-      "platformDeliveryRadiusKm": 10,
-      "minimumOrderValue": 200,
-      "averagePrepTimeMinutes": 45,
-      "maxDailyCapacity": 15,
-      "isOpenToday": true,
-      "openingHours": "10:00 AM - 08:00 PM"
-    }
-  ],
+  "cookers": [],
   "riders": [],
   "categories": [
     {
@@ -550,108 +477,7 @@
       "allergens": []
     }
   ],
-  "products": [
-    {
-      "id": "prod-1791368950956",
-      "cookerId": "cook-1791368950646",
-      "name": "Cardamom Honey Marble Cake",
-      "slug": "cardamom-honey-marble-cake-0955",
-      "description": "Hand-beaten cardamom infused marble cake baked fresh in small batches.",
-      "categoryId": "cat-cakes-desserts",
-      "tagIds": [],
-      "price": 480,
-      "imageUrls": [
-        "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800"
-      ],
-      "netWeightGrams": 582,
-      "servingSizeGrams": 97,
-      "servingsCount": 6,
-      "prepTimeMinutes": 50,
-      "maxWaitLimitMinutes": 120,
-      "isAvailable": true,
-      "stockCount": 10,
-      "dailyCapacity": 10,
-      "bookedToday": 0,
-      "supportsPreorder": true,
-      "status": "APPROVED",
-      "ingredients": [
-        {
-          "name": "All-Purpose Flour (Maida)",
-          "quantity": 250,
-          "unit": "g"
-        },
-        {
-          "name": "Pure Butter (Dairy)",
-          "quantity": 150,
-          "unit": "g"
-        },
-        {
-          "name": "Granulated Cane Sugar",
-          "quantity": 180,
-          "unit": "g"
-        }
-      ],
-      "detectedAllergens": [
-        "Gluten",
-        "Wheat",
-        "Milk"
-      ],
-      "nutrition": {
-        "total": {
-          "calories": 2682,
-          "protein": 27,
-          "carbs": 370.8,
-          "fat": 124.2,
-          "saturatedFat": 77.6,
-          "sugar": 180.5,
-          "fiber": 6.8,
-          "sodium": 971
-        },
-        "per100g": {
-          "calories": 462,
-          "protein": 4.7,
-          "carbs": 63.9,
-          "fat": 21.4,
-          "saturatedFat": 13.4,
-          "sugar": 31.1,
-          "fiber": 1.2,
-          "sodium": 167
-        },
-        "perServing": {
-          "calories": 447,
-          "protein": 4.5,
-          "carbs": 61.8,
-          "fat": 20.7,
-          "saturatedFat": 12.9,
-          "sugar": 30.1,
-          "fiber": 1.1,
-          "sodium": 162
-        },
-        "servingWeightGrams": 97,
-        "servingsPerPackage": 6
-      },
-      "aiAnalysis": {
-        "summary": "Cardamom Honey Marble Cake delivers 447 kcal and 4.5g protein per serving (97g). Its sugar profile is classified as high with high calorie density. Freshly made with 3 transparent whole ingredients.",
-        "healthGrade": "D",
-        "sugarLevel": "High",
-        "calorieDensity": "High",
-        "keyBenefits": [
-          "Prepared using honest homemade kitchen ingredients without chemical preservatives or artificial shelf stabilizers."
-        ],
-        "dietaryCautions": [
-          "Contains verified allergens: Gluten, Wheat, Milk.",
-          "Contains 30.1g sugar per serving. Best enjoyed mindfully for celebrations.",
-          "Calorie-dense indulgence with 447 kcal per serving."
-        ],
-        "disclaimer": "Nutrition information is an estimate calculated directly from entered ingredients and verified database values. Not intended as medical advice.",
-        "suggestedAlternatives": "Looking for low-sugar guilt-free bakes? Explore our Oat & Almond Honey Cookies or Sourdough loaves."
-      },
-      "rating": 5,
-      "reviewCount": 0,
-      "createdAt": "2026-10-07T10:29:10.956Z",
-      "updatedAt": "2026-10-07T10:29:10.956Z"
-    }
-  ],
+  "products": [],
   "orders": [],
   "reviews": [],
   "coupons": [
@@ -699,61 +525,6 @@
   },
   "auditLogs": [
     {
-      "id": "log-1791369872604",
-      "action": "PRODUCT_DELETED",
-      "actorId": "cooker",
-      "actorEmail": "cooker@kitchen",
-      "actorRole": "COOKER",
-      "targetType": "PRODUCT",
-      "targetId": "prod-1791365089312",
-      "details": "Product prod-1791365089312 was deleted from the kitchen menu.",
-      "timestamp": "2026-10-07T10:44:32.604Z"
-    },
-    {
-      "id": "log-1791368950958",
-      "action": "PRODUCT_CREATED",
-      "actorId": "usr-1791368950638",
-      "actorEmail": "Lailas Malabar Oven",
-      "actorRole": "COOKER",
-      "targetType": "PRODUCT",
-      "targetId": "prod-1791368950956",
-      "details": "Product \"Cardamom Honey Marble Cake\" created with calculated nutrition and allergen tags.",
-      "timestamp": "2026-10-07T10:29:10.959Z"
-    },
-    {
-      "id": "log-1791368950647",
-      "action": "COOKER_REGISTERED_ACTIVE",
-      "actorId": "usr-1791368950638",
-      "actorEmail": "laila@kitchen.test",
-      "actorRole": "COOKER",
-      "targetType": "COOKER",
-      "targetId": "cook-1791368950646",
-      "details": "Cooker \"Lailas Malabar Oven\" registered and verified for testing.",
-      "timestamp": "2026-10-07T10:29:10.647Z"
-    },
-    {
-      "id": "log-1791365089313",
-      "action": "PRODUCT_CREATED",
-      "actorId": "usr-1791364973743",
-      "actorEmail": "Chemboott cokker",
-      "actorRole": "COOKER",
-      "targetType": "PRODUCT",
-      "targetId": "prod-1791365089312",
-      "details": "Product \"cake\" created with calculated nutrition and allergen tags.",
-      "timestamp": "2026-10-07T09:24:49.314Z"
-    },
-    {
-      "id": "log-1791364973745",
-      "action": "COOKER_REGISTERED_ACTIVE",
-      "actorId": "usr-1791364973743",
-      "actorEmail": "naswa@gmail.com",
-      "actorRole": "COOKER",
-      "targetType": "COOKER",
-      "targetId": "cook-1791364973744",
-      "details": "Cooker \"Chemboott cokker\" registered and verified for testing.",
-      "timestamp": "2026-10-07T09:22:53.745Z"
-    },
-    {
       "id": "log-1",
       "action": "PLATFORM_INITIALIZED",
       "actorId": "usr-admin-1",
@@ -762,60 +533,17 @@
       "targetType": "SETTING",
       "targetId": "global",
       "details": "Home Food Marketplace database initialized clean for fresh user testing.",
-      "timestamp": "2026-10-07T09:20:17.635Z"
+      "timestamp": "2026-10-07T12:57:29.545Z"
     }
   ],
-  "customerProfiles": [],
-  "customRequests": [
+  "customerProfiles": [
     {
-      "id": "req-1791375370052-76",
-      "requestNumber": "CR-370052",
-      "customerId": "cust-anon",
-      "customerName": "Anas Customer",
-      "customerPhone": "+91 9846012345",
-      "cookerId": "cook-prof-1",
-      "cookerStoreName": "Anas Artisanal Home Bakery",
-      "dishName": "Malabar Spiced Grilled Chicken Bowl",
-      "dishDescription": "High protein powerhouse",
-      "ingredients": [
-        {
-          "name": "Chicken Breast",
-          "amount": "300g"
-        },
-        {
-          "name": "Quinoa",
-          "amount": "100g"
-        }
-      ],
-      "cookingSteps": [
-        "1. Marinate chicken",
-        "2. Grill for 15 mins"
-      ],
-      "macros": {
-        "calories": 450,
-        "protein": 42,
-        "carbs": 22,
-        "fat": 12,
-        "sugar": 3,
-        "fiber": 6
-      },
-      "servings": 2,
-      "specialNotes": "",
-      "deliveryAddress": {
-        "street": "Flat 4B, MG Road",
-        "city": "Kochi",
-        "pincode": "682016"
-      },
-      "status": "DELIVERED",
-      "createdAt": "2026-10-07T12:16:10.052Z",
-      "updatedAt": "2026-10-07T12:16:10.428Z",
-      "quotedPrice": 380,
-      "quotedPrepTimeMinutes": 40,
-      "cookerNotes": "Freshly made with wholesome ingredients.",
-      "deliveryMode": "SELF_DELIVERY",
-      "cookerSelfDelivery": true,
-      "aiDeliveryFallbackTriggered": true,
-      "aiDeliveryFallbackMessage": "⚠️ AI Delivery Fallback: No delivery riders are online in your zone right now! AI has automatically assigned this order to Cooker Self-Delivery so the fresh homemade dish reaches the customer without delay. Cooker keeps 100% of the delivery fee."
+      "id": "prof-1791378145874",
+      "userId": "usr-1791378145873",
+      "savedAddresses": [],
+      "favouriteProductIds": [],
+      "favouriteCookerIds": []
     }
-  ]
+  ],
+  "customRequests": []
 }
