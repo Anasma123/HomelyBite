@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Play,
   RotateCw,
+  Store,
 } from 'lucide-react';
 
 interface Props {
@@ -36,6 +37,14 @@ const ORDER_STEPS: { status: OrderStatus; label: string; desc: string }[] = [
   { status: 'DELIVERED', label: 'Delivered', desc: 'Enjoy fresh homemade food!' },
 ];
 
+const PICKUP_STEPS: { status: OrderStatus; label: string; desc: string }[] = [
+  { status: 'PENDING', label: 'Order Placed', desc: 'Sent to home kitchen' },
+  { status: 'ACCEPTED', label: 'Accepted', desc: 'Confirmed by kitchen' },
+  { status: 'PREPARING', label: 'Baking / Cooking', desc: 'Fresh preparation' },
+  { status: 'READY_FOR_PICKUP', label: 'Ready for Pickup', desc: 'Packed at kitchen counter' },
+  { status: 'DELIVERED', label: 'Collected', desc: 'Handed over to customer' },
+];
+
 export default function OrderTrackingClient({ initialOrder, cooker, rider, existingReview }: Props) {
   const [order, setOrder] = useState<Order>(initialOrder);
   const [reviewRating, setReviewRating] = useState(5);
@@ -45,8 +54,14 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
   const [reviewSubmitted, setReviewSubmitted] = useState(Boolean(existingReview));
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+  const activeSteps = order.deliveryMode === 'CUSTOMER_PICKUP' ? PICKUP_STEPS : ORDER_STEPS;
+
   // Status index for progress bar
   const getStepIndex = (status: OrderStatus) => {
+    if (order.deliveryMode === 'CUSTOMER_PICKUP') {
+      const idx = PICKUP_STEPS.findIndex((s) => s.status === status);
+      return idx === -1 ? 0 : idx;
+    }
     if (status === 'READY_FOR_PICKUP' && order.deliveryMode === 'SELF_DELIVERY') return 3;
     const idx = ORDER_STEPS.findIndex((s) => s.status === status);
     return idx === -1 ? 0 : idx;
@@ -143,11 +158,30 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
 
           {order.status === 'PREPARING' && (
             <button
-              onClick={() => advanceOrderStatus('READY_FOR_PICKUP', 'Dish packed. Smart Rider Radar activated.')}
+              onClick={() =>
+                advanceOrderStatus(
+                  'READY_FOR_PICKUP',
+                  order.deliveryMode === 'CUSTOMER_PICKUP'
+                    ? 'Food packed and ready for customer pickup at kitchen.'
+                    : 'Dish packed. Smart Rider Radar activated.'
+                )
+              }
               disabled={isUpdatingStatus}
               className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold shadow-xs animate-pulse"
             >
-              3. Food Ready → Trigger Smart Rider / Self-Delivery Fallback!
+              {order.deliveryMode === 'CUSTOMER_PICKUP'
+                ? '3. Food Ready → Ready for Customer Pickup at Kitchen!'
+                : '3. Food Ready → Trigger Smart Rider / Self-Delivery Fallback!'}
+            </button>
+          )}
+
+          {order.status === 'READY_FOR_PICKUP' && order.deliveryMode === 'CUSTOMER_PICKUP' && (
+            <button
+              onClick={() => advanceOrderStatus('DELIVERED', 'Customer collected food from kitchen counter.')}
+              disabled={isUpdatingStatus}
+              className="px-2.5 py-1 bg-green-700 hover:bg-green-800 text-white rounded-lg font-bold shadow-xs"
+            >
+              4. Customer Collected Food → Mark Complete (Unlocks Review)
             </button>
           )}
 
@@ -215,19 +249,29 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
         </div>
 
         <div className="text-left sm:text-right">
-          <span className="text-xs text-gray-400 block font-medium">Total Paid via {order.paymentMethod}</span>
+          <span className="text-xs text-gray-400 block font-medium">
+            {order.paymentStatus === 'SUCCESS' ? 'Paid Online via' : 'Pay via'} {order.paymentMethod}
+          </span>
           <span className="text-2xl font-black text-gray-900">₹{order.totalAmount}</span>
         </div>
       </div>
 
       {/* Live Stepper Visualization */}
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-6">
-        <h2 className="text-base font-bold text-gray-900">Live Delivery Journey</h2>
+        <h2 className="text-base font-bold text-gray-900">
+          {order.deliveryMode === 'CUSTOMER_PICKUP' ? 'Live Order & Pickup Journey' : 'Live Delivery Journey'}
+        </h2>
 
         <div className="relative">
           {/* Timeline points */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-            {ORDER_STEPS.map((step, idx) => {
+          <div
+            className={`grid gap-4 ${
+              order.deliveryMode === 'CUSTOMER_PICKUP'
+                ? 'grid-cols-2 sm:grid-cols-5'
+                : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8'
+            }`}
+          >
+            {activeSteps.map((step, idx) => {
               const isPast = idx < currentStepIndex;
               const isCurrent = idx === currentStepIndex;
 
@@ -331,7 +375,9 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
 
         {/* Delivery Address & Kitchen Info */}
         <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4">
-          <h3 className="font-bold text-gray-900 text-sm">Kitchen & Destination</h3>
+          <h3 className="font-bold text-gray-900 text-sm">
+            {order.deliveryMode === 'CUSTOMER_PICKUP' ? 'Kitchen Pickup Point & Contact' : 'Kitchen & Destination'}
+          </h3>
 
           <div className="space-y-3 text-xs text-gray-700">
             <div className="flex items-start gap-2.5">
@@ -339,16 +385,32 @@ export default function OrderTrackingClient({ initialOrder, cooker, rider, exist
               <div>
                 <span className="font-semibold text-gray-900 block">{order.cookerStoreName}</span>
                 <span className="text-gray-500">{order.cookerAddress}</span>
+                {order.cookerPhone && <span className="text-gray-400 block pt-0.5">📞 {order.cookerPhone}</span>}
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5">
-              <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold text-gray-900 block">Deliver to: {order.customerName}</span>
-                <span className="text-gray-500">{order.deliveryAddress.street}, {order.deliveryAddress.city} {order.deliveryAddress.pincode}</span>
+            {order.deliveryMode === 'CUSTOMER_PICKUP' ? (
+              <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-orange-50/70 border border-orange-100">
+                <Store className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-orange-950 block">Direct Kitchen Pickup</span>
+                  <span className="text-gray-600">
+                    To be collected by <strong className="text-gray-900">{order.customerName}</strong> ({order.customerPhone})
+                  </span>
+                  <span className="text-emerald-700 font-semibold block pt-1">
+                    ✓ Zero Delivery Fee (Free Pickup)
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-gray-900 block">Deliver to: {order.customerName}</span>
+                  <span className="text-gray-500">{order.deliveryAddress?.street}, {order.deliveryAddress?.city} {order.deliveryAddress?.pincode}</span>
+                </div>
+              </div>
+            )}
 
             {order.specialInstructions && (
               <div className="p-2.5 bg-gray-50 rounded-xl border border-gray-100 text-[11px] text-gray-600">

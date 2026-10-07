@@ -116,7 +116,7 @@
       "status": "APPROVED",
       "rating": 5,
       "totalReviews": 0,
-      "totalOrders": 0,
+      "totalOrders": 2,
       "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
       "address": "Kochi, Kerala",
       "latitude": 9.9675,
@@ -996,9 +996,9 @@
       "prepTimeMinutes": 45,
       "maxWaitLimitMinutes": 60,
       "isAvailable": true,
-      "stockCount": 10,
+      "stockCount": 8,
       "dailyCapacity": 15,
-      "bookedToday": 0,
+      "bookedToday": 2,
       "supportsPreorder": true,
       "status": "APPROVED",
       "ingredients": [
@@ -1242,7 +1242,113 @@
       "updatedAt": "2026-10-07T19:18:35.392Z"
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "ord-1791402316049",
+      "orderNumber": "HF-2026-7524",
+      "customerId": "usr-customer-test",
+      "customerName": "Test Customer",
+      "customerPhone": "+91 9846012345",
+      "cookerId": "cook-1791400715356",
+      "cookerStoreName": "Rehana Flavors",
+      "cookerAddress": "Kochi, Kerala",
+      "cookerPhone": "+91 9847112233",
+      "items": [
+        {
+          "productId": "prod-1791400715392",
+          "productName": "Kozhikodan Dum Biryani",
+          "productImage": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80",
+          "unitPrice": 240,
+          "quantity": 1,
+          "totalPrice": 240
+        }
+      ],
+      "subtotal": 240,
+      "deliveryFee": 30,
+      "platformFee": 5,
+      "discountAmount": 0,
+      "totalAmount": 275,
+      "platformCommission": 24,
+      "netCookerEarnings": 216,
+      "deliveryAddress": {
+        "street": "Main Road",
+        "city": "Kochi",
+        "pincode": "682036"
+      },
+      "deliveryMode": "PLATFORM_DELIVERY",
+      "deliverySlotDate": "2026-10-07",
+      "deliverySlotTime": "01:00 PM - 02:00 PM",
+      "isPreorder": false,
+      "paymentMethod": "UPI",
+      "paymentStatus": "SUCCESS",
+      "status": "PENDING",
+      "timeline": [
+        {
+          "status": "PENDING",
+          "timestamp": "2026-10-07T19:45:16.049Z",
+          "description": "Order #HF-2026-7524 placed for Smart Rider Delivery (UPI)."
+        }
+      ],
+      "maxWaitLimitMinutes": 60,
+      "createdAt": "2026-10-07T19:45:16.049Z",
+      "updatedAt": "2026-10-07T19:45:16.049Z"
+    },
+    {
+      "id": "ord-1791402315993",
+      "orderNumber": "HF-2026-4526",
+      "customerId": "usr-customer-test",
+      "customerName": "Test Customer",
+      "customerPhone": "+91 9846012345",
+      "cookerId": "cook-1791400715356",
+      "cookerStoreName": "Rehana Flavors",
+      "cookerAddress": "Kochi, Kerala",
+      "cookerPhone": "+91 9847112233",
+      "items": [
+        {
+          "productId": "prod-1791400715392",
+          "productName": "Kozhikodan Dum Biryani",
+          "productImage": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80",
+          "unitPrice": 240,
+          "quantity": 1,
+          "totalPrice": 240
+        }
+      ],
+      "subtotal": 240,
+      "deliveryFee": 0,
+      "platformFee": 5,
+      "discountAmount": 0,
+      "totalAmount": 245,
+      "platformCommission": 24,
+      "netCookerEarnings": 216,
+      "deliveryAddress": {
+        "id": "addr-pickup-1791402315992",
+        "label": "Kitchen Pickup Point",
+        "street": "Kochi, Kerala",
+        "city": "Kochi",
+        "pincode": "682036",
+        "latitude": 9.9675,
+        "longitude": 76.2995,
+        "isDefault": false
+      },
+      "deliveryMode": "CUSTOMER_PICKUP",
+      "deliverySlotDate": "2026-10-07",
+      "deliverySlotTime": "01:00 PM - 02:00 PM",
+      "isPreorder": false,
+      "paymentMethod": "COD",
+      "paymentStatus": "PENDING",
+      "status": "PENDING",
+      "timeline": [
+        {
+          "status": "PENDING",
+          "timestamp": "2026-10-07T19:45:15.993Z",
+          "description": "Order #HF-2026-4526 placed for Direct Kitchen Pickup (Pay at Pickup)."
+        }
+      ],
+      "maxWaitLimitMinutes": 60,
+      "createdAt": "2026-10-07T19:45:15.993Z",
+      "updatedAt": "2026-10-07T19:45:15.993Z"
+    }
+  ],
   "reviews": [],
   "coupons": [
     {
@@ -1288,6 +1394,28 @@
     "otpCooldownSeconds": 60
   },
   "auditLogs": [
+    {
+      "id": "log-1791402316050",
+      "action": "ORDER_PLACED",
+      "actorId": "usr-customer-test",
+      "actorEmail": "Test Customer",
+      "actorRole": "CUSTOMER",
+      "targetType": "ORDER",
+      "targetId": "ord-1791402316049",
+      "details": "Order #HF-2026-7524 placed for ₹275 (1 items).",
+      "timestamp": "2026-10-07T19:45:16.050Z"
+    },
+    {
+      "id": "log-1791402315996",
+      "action": "ORDER_PLACED",
+      "actorId": "usr-customer-test",
+      "actorEmail": "Test Customer",
+      "actorRole": "CUSTOMER",
+      "targetType": "ORDER",
+      "targetId": "ord-1791402315993",
+      "details": "Order #HF-2026-4526 placed for ₹245 (1 items).",
+      "timestamp": "2026-10-07T19:45:15.996Z"
+    },
     {
       "id": "log-1791400715393",
       "action": "PRODUCT_CREATED",

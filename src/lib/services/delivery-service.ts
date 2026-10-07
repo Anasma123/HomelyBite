@@ -33,11 +33,9 @@ export class DeliveryService {
    */
   public static calculateDeliveryFee(distanceKm: number, mode: DeliveryMode): number {
     if (mode === 'CUSTOMER_PICKUP') return 0;
-    if (distanceKm <= 3) return 30;
-    if (distanceKm <= 6) return 60;
-    if (distanceKm <= 10) return 100;
-    // Beyond 10km: 100 + 15 per extra km
-    return Math.round(100 + (distanceKm - 10) * 15);
+    if (distanceKm <= 5) return 30;
+    if (distanceKm <= 10) return 50;
+    return Math.round(50 + (distanceKm - 10) * 10);
   }
 
   /**
@@ -57,35 +55,37 @@ export class DeliveryService {
     );
 
     if (mode === 'CUSTOMER_PICKUP') {
-      if (!cooker.customerPickupEnabled) {
+      if (cooker.customerPickupEnabled === false) {
         return { eligible: false, distanceKm, reason: 'This home cooker does not offer customer pickup.' };
       }
-      return { eligible: true, distanceKm };
+      return { eligible: true, distanceKm: 0 };
     }
 
     if (mode === 'SELF_DELIVERY') {
-      if (!cooker.selfDeliveryEnabled) {
+      if (cooker.selfDeliveryEnabled === false) {
         return { eligible: false, distanceKm, reason: 'Cooker self-delivery is not enabled for this kitchen.' };
       }
-      if (distanceKm > cooker.selfDeliveryRadiusKm) {
+      const maxRadius = cooker.selfDeliveryRadiusKm || 10;
+      if (distanceKm > maxRadius) {
         return {
           eligible: false,
           distanceKm,
-          reason: `Location is ${distanceKm} km away. Cooker self-delivers only up to ${cooker.selfDeliveryRadiusKm} km.`,
+          reason: `Location is ${distanceKm} km away. Cooker self-delivers only up to ${maxRadius} km.`,
         };
       }
       return { eligible: true, distanceKm };
     }
 
     // Default: PLATFORM_DELIVERY
-    if (!cooker.platformDeliveryEnabled) {
+    if (cooker.platformDeliveryEnabled === false) {
       return { eligible: false, distanceKm, reason: 'Platform delivery is currently unavailable for this cooker.' };
     }
-    if (distanceKm > cooker.platformDeliveryRadiusKm) {
+    const maxPlatformRadius = cooker.platformDeliveryRadiusKm || 15;
+    if (distanceKm > maxPlatformRadius) {
       return {
         eligible: false,
         distanceKm,
-        reason: `Delivery distance (${distanceKm} km) exceeds maximum service limit of ${cooker.platformDeliveryRadiusKm} km.`,
+        reason: `Delivery distance (${distanceKm} km) exceeds maximum service limit of ${maxPlatformRadius} km.`,
       };
     }
 

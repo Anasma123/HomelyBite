@@ -23,9 +23,16 @@ export async function POST(request: Request) {
 
     await db.sync();
 
-    if (!customerId || !items.length || !deliveryAddress) {
+    if (!customerId || !items.length) {
       return NextResponse.json(
-        { success: false, message: 'Missing required order fields: items, customer, or address.' },
+        { success: false, message: 'Missing required order fields: items or customer information.' },
+        { status: 400 }
+      );
+    }
+
+    if (deliveryMode !== 'CUSTOMER_PICKUP' && (!deliveryAddress || !deliveryAddress.street)) {
+      return NextResponse.json(
+        { success: false, message: 'Please provide a valid delivery street address.' },
         { status: 400 }
       );
     }
@@ -83,24 +90,40 @@ export async function POST(request: Request) {
     }
 
     // 2. Server-side delivery eligibility & fee calculation
-    const eligibility = DeliveryService.checkDeliveryEligibility(
-      cooker,
-      deliveryAddress.latitude || 9.9675,
-      deliveryAddress.longitude || 76.2995,
-      deliveryMode as DeliveryMode
-    );
+    const effectiveDeliveryAddress: Address = deliveryAddress || {
+      id: `addr-pickup-${Date.now()}`,
+      label: 'Kitchen Pickup Point',
+      street: cooker.address || 'Cooker Kitchen Counter',
+      city: 'Kochi',
+      pincode: '682036',
+      latitude: cooker.latitude || 9.9675,
+      longitude: cooker.longitude || 76.2995,
+      isDefault: false,
+    };
 
-    if (!eligibility.eligible) {
-      return NextResponse.json(
-        { success: false, message: eligibility.reason || 'Address is outside supported delivery range.' },
-        { status: 400 }
+    let serverDeliveryFee = 0;
+    if (deliveryMode === 'CUSTOMER_PICKUP') {
+      serverDeliveryFee = 0;
+    } else {
+      const eligibility = DeliveryService.checkDeliveryEligibility(
+        cooker,
+        effectiveDeliveryAddress.latitude || 9.9675,
+        effectiveDeliveryAddress.longitude || 76.2995,
+        deliveryMode as DeliveryMode
+      );
+
+      if (!eligibility.eligible) {
+        return NextResponse.json(
+          { success: false, message: eligibility.reason || 'Address is outside supported delivery range.' },
+          { status: 400 }
+        );
+      }
+
+      serverDeliveryFee = DeliveryService.calculateDeliveryFee(
+        eligibility.distanceKm,
+        deliveryMode as DeliveryMode
       );
     }
-
-    const serverDeliveryFee = DeliveryService.calculateDeliveryFee(
-      eligibility.distanceKm,
-      deliveryMode as DeliveryMode
-    );
 
     const platformFee = db.getSettings().platformFee || 5;
 
@@ -129,6 +152,9 @@ export async function POST(request: Request) {
     const platformCommission = Math.round((serverSubtotal * commissionPercent) / 100);
     const netCookerEarnings = serverSubtotal - platformCommission;
 
+    const cookerUser = cooker.userId ? db.getUserById(cooker.userId) : null;
+    const cookerPhone = cookerUser?.phone || '+91 9846012345';
+
     const orderNumber = `HF-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const newOrder: Order = {
       id: `ord-${Date.now()}`,
@@ -139,7 +165,7 @@ export async function POST(request: Request) {
       cookerId: cooker.id,
       cookerStoreName: cooker.storeName,
       cookerAddress: cooker.address,
-      cookerPhone: '+91 9988776655',
+      cookerPhone,
       items: orderItems,
       subtotal: serverSubtotal,
       deliveryFee: serverDeliveryFee,
@@ -149,19 +175,21 @@ export async function POST(request: Request) {
       totalAmount,
       platformCommission,
       netCookerEarnings,
-      deliveryAddress,
+      deliveryAddress: effectiveDeliveryAddress,
       deliveryMode: deliveryMode as DeliveryMode,
       deliverySlotDate: deliverySlotDate || new Date().toISOString().split('T')[0],
       deliverySlotTime: deliverySlotTime || '01:00 PM - 02:00 PM',
       isPreorder: Boolean(isPreorder),
       paymentMethod: paymentMethod as PaymentMethod,
-      paymentStatus: 'SUCCESS', // Instant simulated verified payment for seamless testing
+      paymentStatus: paymentMethod === 'COD' ? 'PENDING' : 'SUCCESS',
       status: 'PENDING',
       timeline: [
         {
           status: 'PENDING',
           timestamp: new Date().toISOString(),
-          description: `Order placed and verified via ${paymentMethod}. Awaiting cooker acceptance.`,
+          description: deliveryMode === 'CUSTOMER_PICKUP'
+            ? `Order #${orderNumber} placed for Direct Kitchen Pickup (${paymentMethod === 'COD' ? 'Pay at Pickup' : paymentMethod}).`
+            : `Order #${orderNumber} placed for ${deliveryMode === 'SELF_DELIVERY' ? 'Cooker Self-Delivery' : 'Smart Rider Delivery'} (${paymentMethod}).`,
         },
       ],
       maxWaitLimitMinutes,
