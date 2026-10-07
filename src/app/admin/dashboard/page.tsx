@@ -21,6 +21,10 @@ import {
   Trash2,
   Search,
   Image as ImageIcon,
+  UploadCloud,
+  FileUp,
+  Link as LinkIcon,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -58,6 +62,85 @@ export default function AdminDashboard() {
   const [newCatImage, setNewCatImage] = useState('');
   const [newCatOrder, setNewCatOrder] = useState(1);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [catImageMode, setCatImageMode] = useState<'UPLOAD' | 'URL'>('UPLOAD');
+  const [catFileInfo, setCatFileInfo] = useState<{ name: string; size: number; type: string } | null>(null);
+  const [isProcessingCatFile, setIsProcessingCatFile] = useState(false);
+  const [isCatDragOver, setIsCatDragOver] = useState(false);
+
+  const compressAndReadCategoryFile = (file: File): Promise<{ dataUrl: string; info: { name: string; size: number; type: string } }> => {
+    return new Promise((resolve) => {
+      const fileInfo = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      };
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const rawDataUrl = event.target?.result as string;
+          const img = new Image();
+          img.src = rawDataUrl;
+          img.onload = () => {
+            const maxWidth = 1200;
+            const maxHeight = 800;
+            let { width, height } = img;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve({ dataUrl: rawDataUrl, info: fileInfo });
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.85);
+            resolve({ dataUrl: compressed, info: fileInfo });
+          };
+          img.onerror = () => resolve({ dataUrl: rawDataUrl, info: fileInfo });
+        };
+        reader.onerror = () => resolve({ dataUrl: '', info: fileInfo });
+      } else {
+        // Document (PDF or text/document): create an SVG banner card representation
+        const cleanName = file.name.replace(/[^a-zA-Z0-9 ._-]/g, '');
+        const sizeStr = `${(file.size / 1024).toFixed(1)} KB`;
+        const docSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%234338ca"/><circle cx="300" cy="150" r="45" fill="%236366f1"/><path d="M285 130h30v40h-30z" fill="white"/><text x="300" y="240" font-family="sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">${encodeURIComponent(cleanName)}</text><text x="300" y="270" font-family="sans-serif" font-size="14" fill="%23c7d2fe" text-anchor="middle">Document Attached (${sizeStr})</text></svg>`;
+        resolve({ dataUrl: docSvg, info: fileInfo });
+      }
+    });
+  };
+
+  const handleCatFileSelected = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setIsProcessingCatFile(true);
+    try {
+      const { dataUrl, info } = await compressAndReadCategoryFile(file);
+      if (dataUrl) {
+        setNewCatImage(dataUrl);
+        setCatFileInfo(info);
+      }
+    } catch (err) {
+      console.error('File reading error:', err);
+      alert('Could not read the selected file.');
+    } finally {
+      setIsProcessingCatFile(false);
+    }
+  };
 
   const loadAdminData = async () => {
     try {
@@ -251,6 +334,7 @@ export default function AdminDashboard() {
         setNewCatName('');
         setNewCatDesc('');
         setNewCatImage('');
+        setCatFileInfo(null);
         setNewCatOrder(categories.length + 1);
         alert('New food category created successfully!');
         loadAdminData();
@@ -922,15 +1006,164 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Cover Photo URL (Optional)</label>
-                <input
-                  type="text"
-                  value={newCatImage}
-                  onChange={(e) => setNewCatImage(e.target.value)}
-                  placeholder="https://images.unsplash.com/... (Leave empty for default gourmet banner)"
-                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-indigo-500"
-                />
+              {/* Cover Photo / Document Upload */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-gray-700 block">
+                    Category Cover Image or Document (Optional)
+                  </label>
+                  <div className="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setCatImageMode('UPLOAD')}
+                      className={`px-2.5 py-0.5 rounded-md font-semibold transition-all flex items-center gap-1 ${
+                        catImageMode === 'UPLOAD'
+                          ? 'bg-white text-indigo-700 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      <UploadCloud className="w-3 h-3" />
+                      Upload File / Doc
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCatImageMode('URL')}
+                      className={`px-2.5 py-0.5 rounded-md font-semibold transition-all flex items-center gap-1 ${
+                        catImageMode === 'URL'
+                          ? 'bg-white text-indigo-700 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      <LinkIcon className="w-3 h-3" />
+                      Paste URL
+                    </button>
+                  </div>
+                </div>
+
+                {catImageMode === 'UPLOAD' ? (
+                  <div>
+                    {newCatImage ? (
+                      /* Preview of Uploaded Image / Document */
+                      <div className="relative border border-indigo-200 bg-indigo-50/30 rounded-2xl p-3 flex items-center gap-4">
+                        <div className="w-20 h-16 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                          {catFileInfo?.type?.startsWith('image/') || (!catFileInfo && newCatImage.startsWith('data:image')) ? (
+                            <img
+                              src={newCatImage}
+                              alt="Uploaded Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center p-2 text-indigo-600">
+                              <FileText className="w-6 h-6" />
+                              <span className="text-[9px] font-bold uppercase mt-0.5">DOC</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Ready to Publish
+                            </span>
+                            {catFileInfo && (
+                              <span className="text-[10px] text-gray-500 font-mono">
+                                {(catFileInfo.size / 1024).toFixed(1)} KB
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs font-semibold text-gray-800 truncate mt-1">
+                            {catFileInfo?.name || 'Uploaded category cover photo'}
+                          </p>
+                          <p className="text-[11px] text-gray-400">
+                            Attached and ready for display across marketplace
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <label className="cursor-pointer text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-white border border-indigo-200 hover:border-indigo-400 px-3 py-1.5 rounded-xl transition-all shadow-2xs">
+                            Change
+                            <input
+                              type="file"
+                              accept="image/*,.pdf,.doc,.docx"
+                              className="hidden"
+                              onChange={(e) => handleCatFileSelected(e.target.files)}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewCatImage('');
+                              setCatFileInfo(null);
+                            }}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-xl transition-all"
+                            title="Remove file"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Drop & Upload Box */
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setIsCatDragOver(true);
+                        }}
+                        onDragLeave={() => setIsCatDragOver(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsCatDragOver(false);
+                          handleCatFileSelected(e.dataTransfer.files);
+                        }}
+                        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative group ${
+                          isCatDragOver
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-gray-300 hover:border-indigo-400 bg-gray-50/50 hover:bg-indigo-50/20'
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          accept="image/*,.pdf,.doc,.docx"
+                          disabled={isProcessingCatFile}
+                          onChange={(e) => handleCatFileSelected(e.target.files)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                        />
+                        <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
+                          <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
+                            <UploadCloud className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-gray-800">
+                              {isProcessingCatFile
+                                ? 'Reading & Optimizing File...'
+                                : 'Click to upload image or document, or drag & drop here'}
+                            </p>
+                            <p className="text-[11px] text-gray-500 mt-0.5">
+                              Supports JPG, PNG, WEBP, SVG, PDF or documents from phone / PC
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      value={newCatImage}
+                      onChange={(e) => {
+                        setNewCatImage(e.target.value);
+                        setCatFileInfo(null);
+                      }}
+                      placeholder="https://images.unsplash.com/... (Direct image link)"
+                      className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-indigo-500"
+                    />
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Paste a direct HTTPS image URL or switch to &quot;Upload File / Doc&quot; tab.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="pt-2 flex justify-end">
