@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import React from 'react';
 import Link from 'next/link';
 import { db } from '@/lib/db';
@@ -13,15 +16,19 @@ import {
   CheckCircle2,
   TrendingUp,
   MapPin,
+  Utensils,
+  ShoppingBag,
 } from 'lucide-react';
 
 export default function HomePage() {
   const categories = db.getCategories();
-  const products = db.getProducts().filter((p) => p.status === 'APPROVED');
+  const allProducts = db.getProducts().filter((p) => p.status === 'APPROVED');
+  // Order latest first so any newly created dish immediately appears prominently
+  const products = [...allProducts].reverse();
   const cookers = db.getCookers().filter((c) => c.status === 'APPROVED');
 
   // Filter sections
-  const trendingDishes = products.slice(0, 4);
+  const trendingDishes = products.slice(0, 8);
   const healthyChoices = products.filter((p) => p.nutrition.per100g.sugar <= 16 || p.tagIds.includes('tag-5') || p.tagIds.includes('tag-8'));
   const bestSellers = products.filter((p) => p.tagIds.includes('tag-11') || p.rating >= 4.8);
 
@@ -435,7 +442,57 @@ export default function HomePage() {
               <ProductCard
                 key={p.id}
                 product={p}
-                cooker={cookerMap.get(p.cookerId)}
+                cooker={cookerMap.get(p.cookerId) || db.getCookerById(p.cookerId)}
+                distanceKm={2.4}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Complete Fresh Homemade Food Showcase (Every Dish Published By Chefs) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-800 text-xs font-bold mb-1.5">
+              <Utensils className="w-3.5 h-3.5 text-orange-600" />
+              Direct Kitchen Menu
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              All Homemade Delicacies ({products.length})
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Freshly baked & cooked dishes ready for ordering with 100% ingredient transparency
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/search"
+              className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
+            >
+              <Search className="w-3.5 h-3.5" />
+              Filter & Search Menu
+            </Link>
+          </div>
+        </div>
+
+        {products.length === 0 ? (
+          <div className="bg-white rounded-3xl border border-gray-200 p-8 text-center space-y-3">
+            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mx-auto">
+              <ChefHat className="w-6 h-6" />
+            </div>
+            <h3 className="font-bold text-gray-900 text-base">No Public Dishes Yet</h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+              Home chefs can upload dishes from the Kitchen Dashboard to have them listed here publicly.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {products.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                cooker={cookerMap.get(p.cookerId) || db.getCookerById(p.cookerId)}
                 distanceKm={2.4}
               />
             ))}
@@ -473,7 +530,7 @@ export default function HomePage() {
               <ProductCard
                 key={p.id}
                 product={p}
-                cooker={cookerMap.get(p.cookerId)}
+                cooker={cookerMap.get(p.cookerId) || db.getCookerById(p.cookerId)}
                 distanceKm={1.8}
               />
             ))}

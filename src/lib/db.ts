@@ -49,6 +49,7 @@ interface DatabaseState {
 
 // In-memory runtime state
 let state: DatabaseState | null = null;
+let lastLoadedMtime = 0;
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'marketplace-store.json');
@@ -63,18 +64,22 @@ function ensureDirectoryExistence(filePath: string) {
 }
 
 function loadState(): DatabaseState {
-  if (state) return state;
-
   try {
     if (fs.existsSync(DATA_FILE)) {
-      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-      state = JSON.parse(raw);
-      if (!state!.customRequests) state!.customRequests = [];
+      const stats = fs.statSync(DATA_FILE);
+      if (!state || stats.mtimeMs !== lastLoadedMtime) {
+        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+        state = JSON.parse(raw);
+        if (!state!.customRequests) state!.customRequests = [];
+        lastLoadedMtime = stats.mtimeMs;
+      }
       return state!;
     }
   } catch (err) {
     console.warn('Could not read existing database file, falling back to initial seed data:', err);
   }
+
+  if (state) return state;
 
   // Initial seed state
   state = {
@@ -115,6 +120,9 @@ function saveState() {
   try {
     ensureDirectoryExistence(DATA_FILE);
     fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
+    if (fs.existsSync(DATA_FILE)) {
+      lastLoadedMtime = fs.statSync(DATA_FILE).mtimeMs;
+    }
   } catch (err) {
     // In serverless read-only environments (like edge / some Vercel serverless without persistent disk)
     // state continues in memory safely

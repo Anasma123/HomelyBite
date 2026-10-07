@@ -610,16 +610,17 @@ function SearchPageContent() {
   const [aiPrompt, setAiPrompt] = useState(searchParams.get('q') || searchParams.get('prompt') || '');
   const [selectedGoal, setSelectedGoal] = useState<string>(searchParams.get('goal') || '');
   const [targetMinProtein, setTargetMinProtein] = useState<number>(
-    searchParams.get('minProtein') ? Number(searchParams.get('minProtein')) : 15
+    searchParams.get('minProtein') ? Number(searchParams.get('minProtein')) : 0
   );
   const [targetMaxCalories, setTargetMaxCalories] = useState<number>(
-    searchParams.get('maxCalories') ? Number(searchParams.get('maxCalories')) : 500
+    searchParams.get('maxCalories') ? Number(searchParams.get('maxCalories')) : 900
   );
   const [targetMaxSugar, setTargetMaxSugar] = useState<number>(
-    searchParams.get('maxSugar') ? Number(searchParams.get('maxSugar')) : 12
+    searchParams.get('maxSugar') ? Number(searchParams.get('maxSugar')) : 40
   );
   const [aiInterpretation, setAiInterpretation] = useState<AIInterpretation | null>(null);
   const [aiResults, setAiResults] = useState<RankedAISearchResult[]>([]);
+  const [allStoreProducts, setAllStoreProducts] = useState<any[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [addedItemAnim, setAddedItemAnim] = useState<string | null>(null);
 
@@ -657,12 +658,19 @@ function SearchPageContent() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch Categories for Standard filter
+  // Fetch Categories and Store Products
   useEffect(() => {
-    fetch('/api/categories')
+    fetch('/api/categories', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data.success) setCategories(data.categories);
+      })
+      .catch(() => {});
+
+    fetch('/api/products', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.products) setAllStoreProducts(data.products);
       })
       .catch(() => {});
   }, []);
@@ -1119,6 +1127,40 @@ function SearchPageContent() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Available kitchen dishes fallback */}
+                  {allStoreProducts.length > 0 && (
+                    <div className="p-6 bg-white rounded-3xl border border-gray-200 shadow-xs space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <UtensilsCrossed className="w-4 h-4 text-orange-600" />
+                            All Available Dishes From Verified Kitchens ({allStoreProducts.length})
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            Explore freshly listed homemade dishes prepared by our neighbourhood cooks:
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchMode('STANDARD');
+                            setQuery('');
+                            executeStandardSearch();
+                          }}
+                          className="text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline self-start sm:self-auto"
+                        >
+                          Switch to Standard Menu →
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                        {allStoreProducts.map((p) => (
+                          <ProductCard key={p.id} product={p} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* "Click to Generate AI Food Using Your Requirements" */}
                   <div className="p-6 sm:p-8 bg-gradient-to-br from-purple-950 via-gray-900 to-black text-white rounded-3xl shadow-xl space-y-6">

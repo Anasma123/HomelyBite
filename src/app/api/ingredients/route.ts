@@ -2,10 +2,20 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { MasterIngredient } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const ingredients = db.getMasterIngredients();
-    return NextResponse.json({ success: true, count: ingredients.length, ingredients });
+    return NextResponse.json(
+      { success: true, count: ingredients.length, ingredients },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json({ success: false, message: 'Failed to fetch ingredients' }, { status: 500 });
   }

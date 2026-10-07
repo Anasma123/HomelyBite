@@ -158,6 +158,9 @@ export class AISearchService {
 
     const specificFoodKeywords = rawTokens.filter((t) => !goalStopWords.has(t));
 
+    const isExplicitGoalSearch = Boolean(params.goal && params.goal !== 'GENERAL');
+    const isSpecificKeywordSearch = specificFoodKeywords.length > 0;
+
     const scoredItems: RankedAISearchResult[] = [];
 
     for (const product of products) {
@@ -170,7 +173,7 @@ export class AISearchService {
 
       // 1. Strict Keyword Relevance: If user searched for specific food terms (e.g. chicken, soup, bread, biryani, salad),
       // the product MUST match at least one keyword in name, description, tags, or ingredients.
-      if (specificFoodKeywords.length > 0) {
+      if (isSpecificKeywordSearch) {
         const matchesKeyword = specificFoodKeywords.some((kw: string) =>
           prodNameLower.includes(kw) ||
           prodDescLower.includes(kw) ||
@@ -191,35 +194,28 @@ export class AISearchService {
         fiber: 2,
       };
 
-      // 2. Strict Macro Disqualification
-      // If user specifically wants high protein or gym recovery, dishes with trivial protein must not qualify
-      if (interpretation.minProteinTarget > 0) {
-        const minAcceptableProtein = Math.max(12, Math.round(interpretation.minProteinTarget * 0.7));
-        if (pServing.protein < minAcceptableProtein) {
-          continue; // Disqualify low protein foods
+      // 2. Strict Macro Disqualification ONLY when user explicitly activated a specific body goal AND didn't search for a named dish
+      if (isExplicitGoalSearch && !isSpecificKeywordSearch) {
+        if (params.goal === 'MUSCLE_GAIN' && interpretation.minProteinTarget > 0) {
+          const minAcceptableProtein = Math.max(10, Math.round(interpretation.minProteinTarget * 0.6));
+          if (pServing.protein < minAcceptableProtein) {
+            continue; // Disqualify low protein foods
+          }
         }
-      } else if (interpretation.detectedGoal === 'MUSCLE_GAIN' && pServing.protein < 14) {
-        continue;
-      }
 
-      // If user wants diabetic-safe or low sugar, high sugar dishes must not qualify
-      if (interpretation.maxSugarTarget < 20) {
-        const maxAcceptableSugar = Math.max(8, Math.round(interpretation.maxSugarTarget * 1.3));
-        if (pServing.sugar > maxAcceptableSugar) {
-          continue; // Disqualify high sugar foods
+        if (params.goal === 'DIABETIC_SAFE' && interpretation.maxSugarTarget < 20) {
+          const maxAcceptableSugar = Math.max(10, Math.round(interpretation.maxSugarTarget * 1.5));
+          if (pServing.sugar > maxAcceptableSugar) {
+            continue; // Disqualify high sugar foods
+          }
         }
-      } else if (interpretation.detectedGoal === 'DIABETIC_SAFE' && pServing.sugar > 10) {
-        continue;
-      }
 
-      // If user wants low calorie or weight loss, high calorie dishes must not qualify
-      if (interpretation.maxCaloriesTarget < 800) {
-        const maxAcceptableCal = Math.max(420, Math.round(interpretation.maxCaloriesTarget * 1.25));
-        if (pServing.calories > maxAcceptableCal) {
-          continue; // Disqualify calorie dense foods
+        if (params.goal === 'WEIGHT_LOSS' && interpretation.maxCaloriesTarget < 800) {
+          const maxAcceptableCal = Math.max(450, Math.round(interpretation.maxCaloriesTarget * 1.3));
+          if (pServing.calories > maxAcceptableCal) {
+            continue; // Disqualify calorie dense foods
+          }
         }
-      } else if (interpretation.detectedGoal === 'WEIGHT_LOSS' && pServing.calories > 420) {
-        continue;
       }
 
       // Filter: Avoid specified allergens
@@ -238,7 +234,7 @@ export class AISearchService {
       }
 
       // Base Score
-      let score = 65;
+      let score = 70;
       const badges: string[] = [];
 
       // 1. Protein Evaluation
@@ -345,7 +341,32 @@ export class AISearchService {
 
       scoredItems.push({
         product,
-        cooker: cookerMap.get(product.cookerId),
+        cooker: cookerMap.get(product.cookerId) || ({
+          id: product.cookerId,
+          userId: 'usr-default',
+          storeName: 'Verified Home Chef',
+          bio: 'Freshly prepared homemade food with pure ingredients.',
+          logoUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400',
+          coverImageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200',
+          status: 'APPROVED',
+          rating: 5.0,
+          totalReviews: 0,
+          totalOrders: 0,
+          fssaiLicenseNumber: 'Verified Kitchen',
+          address: 'Kochi, Kerala',
+          latitude: 9.9675,
+          longitude: 76.2995,
+          platformDeliveryEnabled: true,
+          selfDeliveryEnabled: true,
+          customerPickupEnabled: true,
+          selfDeliveryRadiusKm: 6.0,
+          platformDeliveryRadiusKm: 12.0,
+          minimumOrderValue: 200,
+          averagePrepTimeMinutes: 45,
+          maxDailyCapacity: 20,
+          isOpenToday: true,
+          openingHours: '09:00 AM - 09:00 PM',
+        } as any),
         matchScore: finalMatchScore,
         fitnessGrade,
         aiRecommendationReason: recommendationReason,

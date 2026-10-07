@@ -144,12 +144,42 @@ export interface NutritionData {
   sodium?: number;
 }
 
+export interface IngredientResolution {
+  matched: MasterIngredient | null;
+  confidence: number;
+  isExactOrHighConfidence: boolean;
+  suggestions: MasterIngredient[];
+  clarificationNeeded: boolean;
+  suggestedName?: string;
+}
+
 export interface ProductNutritionProfile {
   total: NutritionData;
   per100g: NutritionData;
   perServing: NutritionData;
   servingWeightGrams: number;
   servingsPerPackage: number;
+  ingredientBreakdown?: Array<{
+    inputId: string;
+    inputName: string;
+    quantity: number;
+    unit: string;
+    weightGrams: number;
+    matchedMaster: MasterIngredient | null;
+    confidence: number;
+    clarificationNeeded: boolean;
+    suggestions: MasterIngredient[];
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  }>;
+  unresolvedIngredients?: Array<{
+    index: number;
+    inputId: string;
+    inputName: string;
+    suggestions: MasterIngredient[];
+  }>;
 }
 
 export interface AINutritionAnalysis {

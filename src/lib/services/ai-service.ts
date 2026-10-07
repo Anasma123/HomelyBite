@@ -67,8 +67,13 @@ export class AIService {
       dietaryCautions.push(`Calorie-dense indulgence with ${perServing.calories} kcal per serving.`);
     }
 
+    if (nutrition.unresolvedIngredients && nutrition.unresolvedIngredients.length > 0) {
+      dietaryCautions.push(`⚠️ Note: ${nutrition.unresolvedIngredients.length} ingredient(s) were flagged for clarification. Confirming them ensures exact calorie and protein numbers.`);
+    }
+
     // 5. Synthesis Summary
-    const summary = `${productName} delivers ${perServing.calories} kcal and ${perServing.protein}g protein per serving (${nutrition.servingWeightGrams}g). Its sugar profile is classified as ${sugarLevel.toLowerCase()} with ${calorieDensity.toLowerCase()} calorie density. Freshly made with ${ingredients.length} transparent whole ingredients.`;
+    const matchedCount = nutrition.ingredientBreakdown?.filter((b) => !b.clarificationNeeded).length ?? ingredients.length;
+    const summary = `${productName} delivers ${perServing.calories} kcal and ${perServing.protein}g protein per serving (${nutrition.servingWeightGrams}g). Its sugar profile is classified as ${sugarLevel.toLowerCase()} with ${calorieDensity.toLowerCase()} calorie density. Freshly made with ${ingredients.length} ingredients (${matchedCount} verified in kitchen database).`;
 
     let suggestedAlternatives: string | undefined;
     if (sugarLevel === 'High') {

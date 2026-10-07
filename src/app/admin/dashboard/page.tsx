@@ -145,15 +145,15 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     try {
       const [sRes, cRes, rRes, pRes, catRes, iRes, setRes, lRes, uRes] = await Promise.all([
-        fetch('/api/admin/stats'),
-        fetch('/api/cookers'),
-        fetch('/api/delivery/riders'),
-        fetch('/api/products?status='),
-        fetch('/api/categories'),
-        fetch('/api/ingredients'),
-        fetch('/api/admin/settings'),
-        fetch('/api/admin/audit-logs'),
-        fetch('/api/admin/users'),
+        fetch('/api/admin/stats', { cache: 'no-store' }),
+        fetch('/api/cookers', { cache: 'no-store' }),
+        fetch('/api/delivery/riders', { cache: 'no-store' }),
+        fetch('/api/products?status=', { cache: 'no-store' }),
+        fetch('/api/categories', { cache: 'no-store' }),
+        fetch('/api/ingredients', { cache: 'no-store' }),
+        fetch('/api/admin/settings', { cache: 'no-store' }),
+        fetch('/api/admin/audit-logs', { cache: 'no-store' }),
+        fetch('/api/admin/users', { cache: 'no-store' }),
       ]);
 
       const [sData, cData, rData, pData, catData, iData, setData, lData, uData] = await Promise.all([

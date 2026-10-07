@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Product, Order, CookerProfile, Category, MasterIngredient, ProductIngredientItem, CustomFoodRequest } from '@/lib/types';
+import { NutritionService } from '@/lib/services/nutrition-service';
 import {
   ChefHat,
   TrendingUp,
@@ -167,14 +168,24 @@ export default function CookerDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const cookerId = currentCooker?.id || 'cook-prof-1';
+      let cookerId = currentCooker?.id;
+      if (!cookerId) {
+        try {
+          const cookersRes = await fetch('/api/cookers');
+          const cookersData = await cookersRes.json();
+          if (cookersData.success && cookersData.cookers?.length) {
+            cookerId = cookersData.cookers[0].id;
+          }
+        } catch (e) {}
+      }
+      if (!cookerId) cookerId = 'cook-prof-1';
 
       const [ordersRes, prodsRes, catsRes, ingsRes, reqsRes] = await Promise.all([
-        fetch(`/api/orders?cookerId=${cookerId}`),
-        fetch(`/api/products?cookerId=${cookerId}`),
-        fetch('/api/categories'),
-        fetch('/api/ingredients'),
-        fetch(`/api/custom-requests?cookerId=${cookerId}`),
+        fetch(`/api/orders?cookerId=${cookerId}`, { cache: 'no-store' }),
+        fetch(`/api/products?cookerId=${cookerId}`, { cache: 'no-store' }),
+        fetch('/api/categories', { cache: 'no-store' }),
+        fetch('/api/ingredients', { cache: 'no-store' }),
+        fetch(`/api/custom-requests?cookerId=${cookerId}`, { cache: 'no-store' }),
       ]);
 
       const [ordersData, prodsData, catsData, ingsData, reqsData] = await Promise.all([
@@ -264,7 +275,7 @@ export default function CookerDashboard() {
   const handleAddIngredientRow = () => {
     setNewProdIngredients([
       ...newProdIngredients,
-      { id: Date.now().toString(), name: 'Whole Milk', quantity: 100, unit: 'ml' },
+      { id: Date.now().toString(), name: '', quantity: 100, unit: 'g' },
     ]);
   };
 
@@ -275,6 +286,20 @@ export default function CookerDashboard() {
   const handleIngredientChange = (index: number, field: keyof ProductIngredientItem, val: any) => {
     const updated = [...newProdIngredients];
     updated[index] = { ...updated[index], [field]: val };
+    if (field === 'name') {
+      updated[index].ingredientId = undefined;
+    }
+    setNewProdIngredients(updated);
+  };
+
+  const handleSelectMasterIngredient = (index: number, master: MasterIngredient) => {
+    const updated = [...newProdIngredients];
+    updated[index] = {
+      ...updated[index],
+      name: master.name,
+      ingredientId: master.id,
+      unit: master.standardUnit === 'ml' ? 'ml' : master.standardUnit === 'piece' ? 'pieces' : 'g',
+    };
     setNewProdIngredients(updated);
   };
 
@@ -380,11 +405,23 @@ export default function CookerDashboard() {
 
     setIsSubmittingDish(true);
     try {
+      let cookerId = currentCooker?.id;
+      if (!cookerId) {
+        try {
+          const cookersRes = await fetch('/api/cookers');
+          const cookersData = await cookersRes.json();
+          if (cookersData.success && cookersData.cookers?.length) {
+            cookerId = cookersData.cookers[0].id;
+          }
+        } catch (e) {}
+      }
+      if (!cookerId) cookerId = 'cook-prof-1';
+
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cookerId: currentCooker?.id || 'cook-prof-1',
+          cookerId,
           name: newProdName,
           description: newProdDesc,
           categoryId: newProdCategory || categories[0]?.id,
@@ -403,7 +440,7 @@ export default function CookerDashboard() {
 
       const data = await res.json();
       if (data.success) {
-        alert('Product published successfully!');
+        alert('🎉 Dish published successfully! It is now live on the public Homepage and Search for all customers.');
         setNewProdName('');
         setNewProdPrice('');
         setNewProdDesc('');
@@ -1512,50 +1549,149 @@ export default function CookerDashboard() {
                 </button>
               </div>
 
-              <div className="space-y-2">
-                {newProdIngredients.map((item, idx) => (
-                  <div key={item.id} className="flex items-center gap-2">
-                    {/* Name dropdown or text */}
-                    <input
-                      type="text"
-                      value={item.name}
-                      onChange={(e) => handleIngredientChange(idx, 'name', e.target.value)}
-                      placeholder="e.g. Flour, Sugar, Butter"
-                      className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl p-2 text-gray-900"
-                    />
+              <div className="space-y-3">
+                {newProdIngredients.map((item, idx) => {
+                  const resolution = NutritionService.resolveIngredient(item.name, item.ingredientId, masterIngredients);
 
-                    {/* Quantity */}
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => handleIngredientChange(idx, 'quantity', Number(e.target.value))}
-                      className="w-24 text-xs bg-gray-50 border border-gray-200 rounded-xl p-2 text-gray-900"
-                    />
-
-                    {/* Unit */}
-                    <select
-                      value={item.unit}
-                      onChange={(e) => handleIngredientChange(idx, 'unit', e.target.value)}
-                      className="w-24 text-xs bg-gray-50 border border-gray-200 rounded-xl p-2 text-gray-900"
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-3 rounded-2xl border transition-all ${
+                        resolution.isExactOrHighConfidence && resolution.matched
+                          ? 'bg-white border-emerald-200 shadow-2xs'
+                          : item.name.trim()
+                          ? 'bg-amber-50/70 border-amber-300 shadow-xs'
+                          : 'bg-white border-gray-200'
+                      }`}
                     >
-                      <option value="g">g</option>
-                      <option value="kg">kg</option>
-                      <option value="ml">ml</option>
-                      <option value="litre">litre</option>
-                      <option value="pieces">pieces</option>
-                      <option value="tbsp">tbsp</option>
-                      <option value="tsp">tsp</option>
-                    </select>
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        {/* Name input */}
+                        <div className="flex-1 relative">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleIngredientChange(idx, 'name', e.target.value)}
+                            placeholder="e.g. Atta, Maida, Chicken, Ghee, Sugar, Fish..."
+                            className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-medium focus:outline-none focus:border-orange-500"
+                          />
+                        </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveIngredientRow(idx)}
-                      className="p-2 text-gray-400 hover:text-red-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+                        {/* Quantity */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0.1"
+                            step="any"
+                            value={item.quantity}
+                            onChange={(e) => handleIngredientChange(idx, 'quantity', Number(e.target.value))}
+                            className="w-24 text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-bold focus:outline-none focus:border-orange-500"
+                          />
+
+                          {/* Unit */}
+                          <select
+                            value={item.unit}
+                            onChange={(e) => handleIngredientChange(idx, 'unit', e.target.value)}
+                            className="w-24 text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
+                          >
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                            <option value="ml">ml</option>
+                            <option value="litre">litre</option>
+                            <option value="pieces">pieces</option>
+                            <option value="tbsp">tbsp</option>
+                            <option value="tsp">tsp</option>
+                          </select>
+
+                          {/* Remove Row Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveIngredientRow(idx)}
+                            className="p-2 text-gray-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                            title="Remove ingredient"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Real-time AI Match Feedback & Clarification Prompt */}
+                      {item.name.trim() && (
+                        <div className="mt-2 pt-2 border-t border-gray-100">
+                          {resolution.isExactOrHighConfidence && resolution.matched ? (
+                            <div className="flex flex-wrap items-center justify-between gap-2 bg-emerald-50 rounded-xl px-3 py-1.5 text-xs text-emerald-900">
+                              <div className="flex items-center gap-1.5 font-medium">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span>
+                                  AI Matched: <strong className="text-emerald-800">{resolution.matched.name}</strong>
+                                  <span className="text-emerald-700 font-normal ml-1">
+                                    ({resolution.matched.caloriesPer100} kcal • {resolution.matched.proteinPer100}g protein / 100g)
+                                  </span>
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const other = masterIngredients.find((m) => m.id !== resolution.matched?.id);
+                                  if (other) handleSelectMasterIngredient(idx, other);
+                                }}
+                                className="text-[11px] text-emerald-700 underline hover:text-emerald-900 font-semibold"
+                              >
+                                Select Different
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="bg-amber-100/70 border border-amber-300 rounded-xl p-2.5 space-y-2 text-xs">
+                              <div className="flex items-start gap-1.5 text-amber-950 font-semibold">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <span>AI Clarification Needed: What is &ldquo;{item.name}&rdquo;?</span>
+                                  <p className="text-[11px] font-normal text-amber-900">
+                                    Click a suggested matching ingredient below or choose from the list to lock exact protein & calories:
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* 1-Click Suggestions */}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="text-[10px] text-amber-900 uppercase font-bold">Suggested:</span>
+                                {resolution.suggestions.slice(0, 4).map((s) => (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    onClick={() => handleSelectMasterIngredient(idx, s)}
+                                    className="px-2.5 py-1 bg-white hover:bg-orange-600 hover:text-white border border-amber-300 text-gray-800 rounded-lg text-[11px] font-medium transition-colors shadow-2xs"
+                                  >
+                                    + {s.name} ({s.caloriesPer100} kcal • {s.proteinPer100}g P)
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Full Master Ingredient Dropdown */}
+                              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-amber-200">
+                                <span className="text-[11px] text-amber-900 font-medium">Or choose from {masterIngredients.length} ingredients:</span>
+                                <select
+                                  value={item.ingredientId || ''}
+                                  onChange={(e) => {
+                                    const chosen = masterIngredients.find((m) => m.id === e.target.value);
+                                    if (chosen) handleSelectMasterIngredient(idx, chosen);
+                                  }}
+                                  className="text-xs bg-white border border-amber-300 rounded-lg px-2 py-1 text-gray-800 focus:outline-none focus:border-orange-500"
+                                >
+                                  <option value="">-- Select Master Item --</option>
+                                  {masterIngredients.map((m) => (
+                                    <option key={m.id} value={m.id}>
+                                      {m.name} ({m.caloriesPer100} kcal • {m.proteinPer100}g protein)
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Compute Button */}
@@ -1563,57 +1699,115 @@ export default function CookerDashboard() {
                 type="button"
                 onClick={handleComputeNutrition}
                 disabled={isCalculating}
-                className="mt-3 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-1.5"
+                className="mt-3 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-                {isCalculating ? 'Computing Macros...' : 'Compute Nutrition & Allergen Scan'}
+                {isCalculating ? 'Computing Accurate Macros...' : 'Compute Nutrition & Allergen Scan'}
               </button>
             </div>
 
             {/* Calculated Nutrition Live Preview */}
             {calculatedNutrition && (
               <div className="p-5 bg-gradient-to-r from-orange-50/70 via-amber-50/50 to-white rounded-3xl border border-orange-200 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                    <HeartPulse className="w-4 h-4 text-emerald-600" />
-                    Calculated Nutrition Preview (Per Serving)
-                  </h4>
-                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                    Health Grade: {aiAnalysis?.healthGrade || 'B'}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                      <HeartPulse className="w-4 h-4 text-emerald-600" />
+                      Calculated Nutrition (Per Serving: {calculatedNutrition.servingWeightGrams}g)
+                    </h4>
+                    <p className="text-[11px] text-gray-500">
+                      Based on {newProdServings} servings ({calculatedNutrition.servingsPerPackage} servings total)
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full self-start sm:self-auto">
+                    AI Health Grade: {aiAnalysis?.healthGrade || 'B'}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-xs">
-                  <div className="bg-white p-2.5 rounded-xl border border-orange-100">
+                  <div className="bg-white p-2.5 rounded-xl border border-orange-100 shadow-2xs">
                     <span className="text-[10px] text-gray-400 block font-medium">Calories</span>
                     <strong className="text-base text-gray-900">{calculatedNutrition.perServing.calories}</strong> kcal
                   </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-purple-100">
+                  <div className="bg-white p-2.5 rounded-xl border border-purple-100 shadow-2xs">
                     <span className="text-[10px] text-gray-400 block font-medium">Protein</span>
                     <strong className="text-base text-purple-700">{calculatedNutrition.perServing.protein}g</strong>
                   </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-amber-100">
+                  <div className="bg-white p-2.5 rounded-xl border border-amber-100 shadow-2xs">
                     <span className="text-[10px] text-gray-400 block font-medium">Carbs</span>
                     <strong className="text-base text-amber-700">{calculatedNutrition.perServing.carbs}g</strong>
                   </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-rose-100">
+                  <div className="bg-white p-2.5 rounded-xl border border-rose-100 shadow-2xs">
                     <span className="text-[10px] text-gray-400 block font-medium">Fat</span>
                     <strong className="text-base text-rose-700">{calculatedNutrition.perServing.fat}g</strong>
                   </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-blue-100">
+                  <div className="bg-white p-2.5 rounded-xl border border-blue-100 shadow-2xs">
                     <span className="text-[10px] text-gray-400 block font-medium">Sugar</span>
                     <strong className="text-base text-blue-700">{calculatedNutrition.perServing.sugar}g</strong>
                   </div>
-                  <div className="bg-white p-2.5 rounded-xl border border-emerald-100">
+                  <div className="bg-white p-2.5 rounded-xl border border-emerald-100 shadow-2xs">
                     <span className="text-[10px] text-gray-400 block font-medium">Fiber</span>
                     <strong className="text-base text-emerald-700">{calculatedNutrition.perServing.fiber}g</strong>
                   </div>
                 </div>
 
+                {/* Per 100g Reference Row */}
+                <div className="bg-white/90 p-3 rounded-2xl border border-gray-100 flex flex-wrap items-center justify-between text-[11px] text-gray-600 gap-2">
+                  <span className="font-semibold text-gray-700">Per 100g Baseline:</span>
+                  <span><strong>{calculatedNutrition.per100g.calories}</strong> kcal</span>
+                  <span><strong>{calculatedNutrition.per100g.protein}g</strong> protein</span>
+                  <span><strong>{calculatedNutrition.per100g.carbs}g</strong> carbs</span>
+                  <span><strong>{calculatedNutrition.per100g.fat}g</strong> fat</span>
+                  <span><strong>{calculatedNutrition.per100g.sugar}g</strong> sugar</span>
+                  <span><strong>{calculatedNutrition.per100g.fiber}g</strong> fiber</span>
+                </div>
+
+                {/* AI Analysis Summary */}
+                {aiAnalysis && (
+                  <div className="bg-white p-3 rounded-2xl border border-orange-100 text-xs space-y-1.5">
+                    <p className="font-medium text-gray-800">{aiAnalysis.summary}</p>
+                    {aiAnalysis.keyBenefits?.length > 0 && (
+                      <p className="text-[11px] text-emerald-700">
+                        ✓ <strong>Highlight:</strong> {aiAnalysis.keyBenefits[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Detected Allergens */}
                 {detectedAllergens.length > 0 && (
                   <div className="text-xs text-red-700 bg-red-50 p-2.5 rounded-xl border border-red-200">
                     <strong>Auto-detected Allergens:</strong> {detectedAllergens.join(', ')}
+                  </div>
+                )}
+
+                {/* Itemized Ingredient Contribution Breakdown */}
+                {calculatedNutrition.ingredientBreakdown && calculatedNutrition.ingredientBreakdown.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block">
+                      Ingredient Breakdown & Contribution ({calculatedNutrition.ingredientBreakdown.length} items)
+                    </span>
+                    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden divide-y divide-gray-50 text-[11px]">
+                      {calculatedNutrition.ingredientBreakdown.map((b: any, bIdx: number) => (
+                        <div key={bIdx} className="p-2.5 flex items-center justify-between">
+                          <div>
+                            <span className="font-semibold text-gray-900">{b.inputName}</span>
+                            <span className="text-gray-400 ml-1">
+                              ({b.quantity} {b.unit} &rarr; {b.weightGrams}g)
+                            </span>
+                            {b.matchedMaster && (
+                              <span className="block text-[10px] text-emerald-700">
+                                Verified: {b.matchedMaster.name}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-gray-900">{b.calories} kcal</span>
+                            <span className="text-purple-700 ml-2 font-medium">{b.protein}g protein</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

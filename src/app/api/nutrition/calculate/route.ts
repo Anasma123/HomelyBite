@@ -3,6 +3,9 @@ import { NutritionService } from '@/lib/services/nutrition-service';
 import { AllergenService } from '@/lib/services/allergen-service';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -29,6 +32,12 @@ export async function POST(request: Request) {
       success: true,
       nutrition: calculatedNutrition,
       detectedAllergens,
+      unresolvedIngredients: calculatedNutrition.unresolvedIngredients || [],
+      ingredientBreakdown: calculatedNutrition.ingredientBreakdown || [],
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
     });
   } catch (error) {
     console.error('Error in calculate nutrition route:', error);
