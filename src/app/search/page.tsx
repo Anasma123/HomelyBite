@@ -362,22 +362,29 @@ function RequestBakerModal({
 }) {
   const { currentUser } = useAuth();
   const [quantity, setQuantity] = useState(1);
-  const [customerName, setCustomerName] = useState(currentUser?.name || '');
-  const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '');
-  const [street, setStreet] = useState('');
-  const [city, setCity] = useState('Kochi');
-  const [pincode, setPincode] = useState('682016');
   const [specialNotes, setSpecialNotes] = useState('');
-  const [selectedCooker, setSelectedCooker] = useState('cook-prof-1');
+  const [selectedCooker, setSelectedCooker] = useState('ALL');
   const [submitting, setSubmitting] = useState(false);
   const [submittedReq, setSubmittedReq] = useState<CustomFoodRequest | null>(null);
+  const [availableCookers, setAvailableCookers] = useState<{ id: string; storeName: string; address: string; rating: number; status: string }[]>([]);
+  const [loadingCookers, setLoadingCookers] = useState(false);
 
+  // Fetch registered cookers dynamically
   useEffect(() => {
-    if (currentUser) {
-      if (currentUser.name) setCustomerName(currentUser.name);
-      if (currentUser.phone) setCustomerPhone(currentUser.phone);
-    }
-  }, [currentUser]);
+    if (!isOpen) return;
+    setLoadingCookers(true);
+    fetch('/api/cookers', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.cookers) {
+          const approved = data.cookers.filter((c: any) => c.status === 'APPROVED');
+          setAvailableCookers(approved);
+          if (approved.length === 1) setSelectedCooker(approved[0].id);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingCookers(false));
+  }, [isOpen]);
 
   if (!isOpen || !recipe) return null;
 
@@ -434,6 +441,12 @@ function RequestBakerModal({
     );
   }
 
+  const getSelectedCookerName = () => {
+    if (selectedCooker === 'ALL') return 'Broadcast to All Nearby Bakers';
+    const found = availableCookers.find((c) => c.id === selectedCooker);
+    return found?.storeName || 'Selected Baker';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -449,12 +462,12 @@ function RequestBakerModal({
           macros: recipe.macros,
           servings: quantity,
           customerId: currentUser.id,
-          customerName: customerName.trim() || currentUser.name,
-          customerPhone: customerPhone.trim() || currentUser.phone || '+91 9846012345',
-          deliveryAddress: { street: street.trim(), city, pincode },
+          customerName: currentUser.name,
+          customerPhone: currentUser.phone || '',
+          deliveryAddress: { street: '', city: '', pincode: '' },
           specialNotes,
           cookerId: selectedCooker,
-          cookerStoreName: selectedCooker === 'ALL' ? 'Broadcast to All Nearby Bakers' : 'Anas Artisanal Home Bakery',
+          cookerStoreName: getSelectedCookerName(),
         }),
       });
       const data = await res.json();
@@ -498,7 +511,7 @@ function RequestBakerModal({
               <span className="text-xs font-mono font-bold text-gray-500">#{submittedReq.requestNumber}</span>
               <h4 className="text-lg font-black text-gray-900 mt-1">Request Sent to Baker!</h4>
               <p className="text-xs text-gray-600 mt-1 max-w-xs mx-auto">
-                Your custom dish "{recipe.recipeName}" ({quantity} {quantity === 1 ? 'serving' : 'servings'}) has been submitted.
+                Your custom dish &quot;{recipe.recipeName}&quot; ({quantity} {quantity === 1 ? 'serving' : 'servings'}) has been submitted.
               </p>
             </div>
             <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200 text-xs text-orange-950 text-left space-y-1.5">
@@ -567,20 +580,33 @@ function RequestBakerModal({
               </div>
             </div>
 
-            {/* Select Baker */}
+            {/* Select Baker - Dynamic from registered cookers */}
             <div>
               <label className="text-xs font-bold text-gray-700 block mb-1">Select Home Baker / Kitchen:</label>
-              <select
-                value={selectedCooker}
-                onChange={(e) => setSelectedCooker(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:border-orange-500"
-              >
-                <option value="cook-prof-1">⭐ Anas Artisanal Home Bakery (Panampilly Nagar, Kochi)</option>
-                <option value="ALL">📢 Broadcast to All Verified Home Bakers Nearby</option>
-              </select>
+              {loadingCookers ? (
+                <div className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-400 animate-pulse">
+                  Loading registered bakers...
+                </div>
+              ) : (
+                <select
+                  value={selectedCooker}
+                  onChange={(e) => setSelectedCooker(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-900 focus:outline-none focus:border-orange-500"
+                >
+                  <option value="ALL">📢 Broadcast to All Verified Home Bakers Nearby</option>
+                  {availableCookers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      ⭐ {c.storeName} ({c.address}) — ★{c.rating.toFixed(1)}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {availableCookers.length === 0 && !loadingCookers && (
+                <p className="text-[10px] text-gray-400 mt-1">No approved bakers found. Use &quot;Broadcast&quot; to notify all nearby bakers.</p>
+              )}
             </div>
 
-            {/* Customer Details (Auto-filled from Account) */}
+            {/* Customer Details (Auto-filled from Account — Read Only) */}
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xs">
@@ -594,37 +620,6 @@ function RequestBakerModal({
               <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
                 Verified Account
               </span>
-            </div>
-
-            {/* Delivery Address */}
-            <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1">Delivery Address & Landmark</label>
-              <input
-                type="text"
-                required
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                placeholder="Flat/House No, Building, Street, Panampilly Nagar"
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white mb-2"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  required
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="City"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900"
-                />
-                <input
-                  type="text"
-                  required
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
-                  placeholder="Pincode"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900"
-                />
-              </div>
             </div>
 
             {/* Special Instructions */}
