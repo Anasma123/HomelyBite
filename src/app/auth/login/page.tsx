@@ -87,90 +87,56 @@ export default function LoginPage() {
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-6">
-        {/* Quick Demo Personas (1-Click Instant Testing) */}
-        <div className="space-y-2">
-          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block text-center">
-            ⚡ Quick Test: 1-Click Persona Sign-In
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => loginAsDemo('amina.customer@homefood.local', '/')}
-              className="p-2.5 rounded-xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100 text-left transition-all text-xs"
-            >
-              <div className="flex items-center gap-1.5 font-bold text-orange-900">
-                <ShoppingBag className="w-3.5 h-3.5 text-orange-600" />
-                Customer
-              </div>
-              <span className="text-[10px] text-gray-500">Amina Fathima</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => loginAsDemo('anas.bakery@homefood.local', '/cooker/dashboard')}
-              className="p-2.5 rounded-xl border border-amber-200 bg-amber-50/70 hover:bg-amber-100 text-left transition-all text-xs"
-            >
-              <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                <ChefHat className="w-3.5 h-3.5 text-amber-600" />
-                Cooker / Baker
-              </div>
-              <span className="text-[10px] text-gray-500">Anas Rahiman</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => loginAsDemo('arjun.rider@homefood.local', '/rider/dashboard')}
-              className="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-left transition-all text-xs"
-            >
-              <div className="flex items-center gap-1.5 font-bold text-emerald-900">
-                <Bike className="w-3.5 h-3.5 text-emerald-600" />
-                Delivery Rider
-              </div>
-              <span className="text-[10px] text-gray-500">Arjun Das</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => loginAsDemo('admin@homefood.local', '/admin/dashboard')}
-              className="p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-left transition-all text-xs"
-            >
-              <div className="flex items-center gap-1.5 font-bold text-indigo-900">
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-                Admin Portal
-              </div>
-              <span className="text-[10px] text-gray-500">Master Control</span>
-            </button>
+        {/* Admin Credential Notice */}
+        <div className="p-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0" />
+            <div>
+              <span className="font-bold text-indigo-950 block">Platform Administrator</span>
+              <span className="text-[11px] text-indigo-700">Username: <code className="bg-indigo-100/80 px-1 py-0.5 rounded font-mono font-bold">silu</code> | Password: <code className="bg-indigo-100/80 px-1 py-0.5 rounded font-mono font-bold">123</code></span>
+            </div>
           </div>
-        </div>
-
-        <div className="relative flex py-1 items-center">
-          <div className="grow border-t border-gray-100"></div>
-          <span className="shrink mx-2 text-[11px] text-gray-400">or sign in with email</span>
-          <div className="grow border-t border-gray-100"></div>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail('silu');
+              setPassword('123');
+            }}
+            className="text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white border border-indigo-200 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 shadow-2xs transition-colors shrink-0"
+          >
+            Auto-Fill Admin
+          </button>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Email Address</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. anas.bakery@homefood.local"
-              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
-            />
+            <label className="text-xs font-semibold text-gray-700 block mb-1">Username / Email Address</label>
+            <div className="relative">
+              <input
+                type="text"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="e.g. silu or your registered email"
+                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
+              />
+              <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
           </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-700 block mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
-            />
+            <div className="relative">
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="•••••••• (Admin password: 123)"
+                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-gray-900 focus:outline-none focus:border-orange-500"
+              />
+              <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
           </div>
 
           {errorMessage && (
@@ -184,15 +150,17 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-2xl text-xs transition-colors shadow-xs"
           >
-            {loading ? 'Authenticating...' : 'Sign In →'}
+            {loading ? 'Authenticating...' : 'Sign In with Role Access →'}
           </button>
         </form>
 
-        <div className="pt-2 text-center text-xs text-gray-500">
-          New to HomeFood?{' '}
-          <Link href="/auth/register" className="font-bold text-orange-600 hover:underline">
-            Register with Email OTP
-          </Link>
+        <div className="pt-2 text-center text-xs text-gray-500 space-y-2">
+          <div>
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/register" className="font-bold text-orange-600 hover:underline">
+              Register as Customer, Cooker, or Rider
+            </Link>
+          </div>
         </div>
       </div>
     </div>

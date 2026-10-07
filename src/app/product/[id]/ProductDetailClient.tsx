@@ -206,23 +206,34 @@ export default function ProductDetailClient({ product, cooker, reviews }: Props)
             {/* Daily Capacity & Availability Indicator */}
             <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
               <span>Daily Capacity: {product.dailyCapacity} orders</span>
-              <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Available Now ({product.stockCount} left today)
-              </span>
+              {product.isAvailable !== false ? (
+                <span className="font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md flex items-center gap-1">
+                  Available Now ({product.stockCount} left today)
+                </span>
+              ) : (
+                <span className="font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md flex items-center gap-1">
+                  Currently Unavailable / Sold Out
+                </span>
+              )}
             </div>
 
             {/* CTA Buttons */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 type="button"
+                disabled={product.isAvailable === false}
                 onClick={handleAddToCart}
                 className={`py-3 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                  addedSuccess
+                  product.isAvailable === false
+                    ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                    : addedSuccess
                     ? 'bg-emerald-600 text-white'
                     : 'bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100'
                 }`}
               >
-                {addedSuccess ? (
+                {product.isAvailable === false ? (
+                  'Unavailable'
+                ) : addedSuccess ? (
                   <>
                     <Check className="w-4 h-4" /> Added to Cart!
                   </>
@@ -233,10 +244,15 @@ export default function ProductDetailClient({ product, cooker, reviews }: Props)
 
               <button
                 type="button"
+                disabled={product.isAvailable === false}
                 onClick={handleBuyNow}
-                className="py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-bold text-sm shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                className={`py-3 rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 ${
+                  product.isAvailable === false
+                    ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
+                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-500/20'
+                }`}
               >
-                Buy Now →
+                {product.isAvailable === false ? 'Sold Out' : 'Buy Now →'}
               </button>
             </div>
           </div>

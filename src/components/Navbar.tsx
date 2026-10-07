@@ -16,6 +16,9 @@ import {
   Menu,
   X,
   Sparkles,
+  LogOut,
+  ShieldCheck,
+  Bike,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -32,8 +35,29 @@ export default function Navbar() {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  };
+
+  const getDashboardHref = () => {
+    if (currentRole === 'ADMIN') return '/admin/dashboard';
+    if (currentRole === 'COOKER') return '/cooker/dashboard';
+    if (currentRole === 'RIDER') return '/rider/dashboard';
+    return '/orders';
+  };
+
+  const getRoleBadge = () => {
+    if (currentRole === 'ADMIN') return { label: 'Admin', bg: 'bg-indigo-100 text-indigo-700 border-indigo-200' };
+    if (currentRole === 'COOKER') return { label: 'Cooker', bg: 'bg-amber-100 text-amber-800 border-amber-200' };
+    if (currentRole === 'RIDER') return { label: 'Rider', bg: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+    return { label: 'Customer', bg: 'bg-orange-100 text-orange-800 border-orange-200' };
+  };
+
+  const roleBadge = getRoleBadge();
+
   return (
-    <nav className="glass-nav sticky top-[33px] z-40 bg-white/95 backdrop-blur-md border-b border-gray-200">
+    <nav className="glass-nav sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Brand Logo */}
@@ -81,26 +105,52 @@ export default function Navbar() {
               <Sparkles className="w-4 h-4 text-orange-500" />
               Explore Dishes
             </Link>
-            {currentRole === 'COOKER' ? (
-              <Link
-                href="/cooker/dashboard"
-                className="text-orange-600 font-semibold hover:text-orange-700 transition-colors flex items-center gap-1"
-              >
-                <ChefHat className="w-4 h-4" />
-                Kitchen Dashboard
-              </Link>
+
+            {/* Role-Specific Navigation Links */}
+            {currentUser ? (
+              <>
+                {currentRole === 'ADMIN' && (
+                  <Link
+                    href="/admin/dashboard"
+                    className="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                    Admin Portal
+                  </Link>
+                )}
+                {currentRole === 'COOKER' && (
+                  <Link
+                    href="/cooker/dashboard"
+                    className="text-amber-700 font-semibold hover:text-amber-800 transition-colors flex items-center gap-1.5"
+                  >
+                    <ChefHat className="w-4 h-4 text-amber-600" />
+                    Kitchen Dashboard
+                  </Link>
+                )}
+                {currentRole === 'RIDER' && (
+                  <Link
+                    href="/rider/dashboard"
+                    className="text-emerald-700 font-semibold hover:text-emerald-800 transition-colors flex items-center gap-1.5"
+                  >
+                    <Bike className="w-4 h-4 text-emerald-600" />
+                    Rider Portal
+                  </Link>
+                )}
+                <Link href="/orders" className="hover:text-orange-600 transition-colors">
+                  My Orders
+                </Link>
+              </>
             ) : (
-              <Link
-                href="/auth/register?role=COOKER"
-                className="hover:text-orange-600 transition-colors flex items-center gap-1"
-              >
-                <ChefHat className="w-4 h-4" />
-                Become a Cooker
-              </Link>
+              <>
+                <Link
+                  href="/auth/register?role=COOKER"
+                  className="hover:text-orange-600 transition-colors flex items-center gap-1"
+                >
+                  <ChefHat className="w-4 h-4" />
+                  Become a Cooker
+                </Link>
+              </>
             )}
-            <Link href="/orders" className="hover:text-orange-600 transition-colors">
-              My Orders
-            </Link>
           </div>
 
           {/* Right Action Icons */}
@@ -130,18 +180,11 @@ export default function Navbar() {
 
             {/* User Profile / Login */}
             {currentUser ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
+              <div className="flex items-center gap-3 pl-2 border-l border-gray-200">
                 <Link
-                  href={
-                    currentRole === 'COOKER'
-                      ? '/cooker/dashboard'
-                      : currentRole === 'RIDER'
-                      ? '/rider/dashboard'
-                      : currentRole === 'ADMIN'
-                      ? '/admin/dashboard'
-                      : '/orders'
-                  }
+                  href={getDashboardHref()}
                   className="flex items-center gap-2 group"
+                  title="Go to Dashboard"
                 >
                   <img
                     src={currentUser.avatarUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
@@ -152,17 +195,35 @@ export default function Navbar() {
                     <p className="text-xs font-semibold text-gray-900 leading-tight group-hover:text-orange-600">
                       {currentUser.name}
                     </p>
-                    <p className="text-[10px] text-gray-500 leading-tight capitalize">{currentUser.role.toLowerCase()}</p>
+                    <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded border ${roleBadge.bg}`}>
+                      {roleBadge.label}
+                    </span>
                   </div>
                 </Link>
+
+                <button
+                  onClick={handleLogout}
+                  title="Sign Out"
+                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             ) : (
-              <Link
-                href="/auth/login"
-                className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shadow-xs"
-              >
-                Sign In
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/auth/login"
+                  className="bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shadow-xs"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="hidden sm:inline-block bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold px-3.5 py-2 rounded-full transition-colors"
+                >
+                  Register
+                </Link>
+              </div>
             )}
 
             {/* Mobile menu button */}
@@ -199,6 +260,23 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-4 space-y-2 text-sm font-medium">
+          {currentUser && (
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100">
+              <div>
+                <p className="font-bold text-gray-900 text-xs">{currentUser.name}</p>
+                <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded border ${roleBadge.bg}`}>
+                  {roleBadge.label}
+                </span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-xs text-red-600 font-semibold flex items-center gap-1"
+              >
+                <LogOut className="w-3.5 h-3.5" /> Logout
+              </button>
+            </div>
+          )}
+
           <Link
             href="/search"
             onClick={() => setMobileMenuOpen(false)}
@@ -206,34 +284,69 @@ export default function Navbar() {
           >
             Explore All Dishes
           </Link>
-          <Link
-            href="/orders"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-gray-700 hover:text-orange-600"
-          >
-            My Orders
-          </Link>
-          <Link
-            href="/cooker/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-gray-700 hover:text-orange-600"
-          >
-            Cooker Kitchen Dashboard
-          </Link>
-          <Link
-            href="/rider/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-gray-700 hover:text-orange-600"
-          >
-            Rider Delivery Portal
-          </Link>
-          <Link
-            href="/admin/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-gray-700 hover:text-orange-600"
-          >
-            Admin Master Dashboard
-          </Link>
+
+          {currentUser ? (
+            <>
+              {currentRole === 'ADMIN' && (
+                <Link
+                  href="/admin/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-indigo-700 font-semibold"
+                >
+                  Admin Master Dashboard
+                </Link>
+              )}
+              {currentRole === 'COOKER' && (
+                <Link
+                  href="/cooker/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-amber-700 font-semibold"
+                >
+                  Cooker Kitchen Dashboard
+                </Link>
+              )}
+              {currentRole === 'RIDER' && (
+                <Link
+                  href="/rider/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-emerald-700 font-semibold"
+                >
+                  Rider Delivery Portal
+                </Link>
+              )}
+              <Link
+                href="/orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-gray-700 hover:text-orange-600"
+              >
+                My Orders
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth/register?role=COOKER"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-orange-600 font-semibold"
+              >
+                Become a Cooker
+              </Link>
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-gray-700 hover:text-orange-600"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-gray-700 hover:text-orange-600"
+              >
+                Create Account
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>

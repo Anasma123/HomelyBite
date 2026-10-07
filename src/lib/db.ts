@@ -16,6 +16,7 @@ import {
   CustomerProfile,
   OrderStatus,
   DeliveryMode,
+  CustomFoodRequest,
 } from './types';
 import {
   INITIAL_USERS,
@@ -43,6 +44,7 @@ interface DatabaseState {
   settings: PlatformSettings;
   auditLogs: AuditLog[];
   customerProfiles: CustomerProfile[];
+  customRequests: CustomFoodRequest[];
 }
 
 // In-memory runtime state
@@ -67,6 +69,7 @@ function loadState(): DatabaseState {
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
       state = JSON.parse(raw);
+      if (!state!.customRequests) state!.customRequests = [];
       return state!;
     }
   } catch (err) {
@@ -82,89 +85,8 @@ function loadState(): DatabaseState {
     tags: [...INITIAL_TAGS],
     masterIngredients: [...MASTER_INGREDIENTS],
     products: [...INITIAL_PRODUCTS],
-    orders: [
-      {
-        id: 'ord-seed-101',
-        orderNumber: 'HF-2026-901',
-        customerId: 'usr-cust-1',
-        customerName: 'Amina Fathima',
-        customerPhone: '+91 9554433221',
-        cookerId: 'cook-prof-1',
-        cookerStoreName: 'Anas Artisanal Home Bakery',
-        cookerAddress: 'Baker Street Villa, Panampilly Nagar, Kochi',
-        cookerPhone: '+91 9988776655',
-        items: [
-          {
-            productId: 'prod-1',
-            productName: 'Belgian Dark Chocolate Truffle Cake (500g)',
-            productImage: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80',
-            unitPrice: 650,
-            quantity: 1,
-            totalPrice: 650,
-          },
-        ],
-        subtotal: 650,
-        deliveryFee: 30,
-        platformFee: 5,
-        discountAmount: 50,
-        couponCode: 'WELCOME50',
-        totalAmount: 635,
-        platformCommission: 65,
-        netCookerEarnings: 585,
-        deliveryAddress: {
-          id: 'addr-1',
-          label: 'Home',
-          street: 'Flat 4B, Palm Grove, Panampilly Nagar',
-          city: 'Kochi',
-          pincode: '682036',
-          latitude: 9.9680,
-          longitude: 76.3010,
-          isDefault: true,
-        },
-        deliveryMode: 'PLATFORM_DELIVERY',
-        deliverySlotDate: new Date().toISOString().split('T')[0],
-        deliverySlotTime: '01:00 PM - 02:00 PM',
-        isPreorder: false,
-        paymentMethod: 'UPI',
-        paymentStatus: 'SUCCESS',
-        status: 'DELIVERED',
-        timeline: [
-          { status: 'PENDING', timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), description: 'Order placed & paid via UPI' },
-          { status: 'ACCEPTED', timestamp: new Date(Date.now() - 3600000 * 1.8).toISOString(), description: 'Accepted by Anas Artisanal Home Bakery' },
-          { status: 'PREPARING', timestamp: new Date(Date.now() - 3600000 * 1.5).toISOString(), description: 'Freshly baking in small batch' },
-          { status: 'READY_FOR_PICKUP', timestamp: new Date(Date.now() - 3600000 * 1.0).toISOString(), description: 'Packed & ready at home kitchen' },
-          { status: 'RIDER_ASSIGNED', timestamp: new Date(Date.now() - 3600000 * 0.9).toISOString(), description: 'Assigned to Arjun Das (KL-07-CD-4102)' },
-          { status: 'PICKED_UP', timestamp: new Date(Date.now() - 3600000 * 0.7).toISOString(), description: 'Picked up from kitchen' },
-          { status: 'OUT_FOR_DELIVERY', timestamp: new Date(Date.now() - 3600000 * 0.5).toISOString(), description: 'On the way to customer' },
-          { status: 'DELIVERED', timestamp: new Date(Date.now() - 3600000 * 0.2).toISOString(), description: 'Safely handed over to customer' },
-        ],
-        assignedRiderId: 'rider-prof-1',
-        assignedRiderName: 'Arjun Das',
-        assignedRiderPhone: '+91 9776655443',
-        maxWaitLimitMinutes: 45,
-        createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-        updatedAt: new Date(Date.now() - 3600000 * 0.2).toISOString(),
-      },
-    ],
-    reviews: [
-      {
-        id: 'rev-1',
-        orderId: 'ord-seed-101',
-        productId: 'prod-1',
-        customerId: 'usr-cust-1',
-        customerName: 'Amina Fathima',
-        cookerId: 'cook-prof-1',
-        productRating: 5,
-        cookerRating: 5,
-        deliveryRating: 5,
-        tasteRating: 5,
-        freshnessRating: 5,
-        packagingRating: 5,
-        comment: 'Absolutely heavenly! The pure dark cocoa notes and melted truffle core were exquisite. The ingredient transparency gave me so much peace of mind.',
-        createdAt: new Date().toISOString(),
-        isVerifiedPurchase: true,
-      },
-    ],
+    orders: [],
+    reviews: [],
     coupons: [...INITIAL_COUPONS],
     settings: { ...DEFAULT_PLATFORM_SETTINGS },
     auditLogs: [
@@ -176,30 +98,12 @@ function loadState(): DatabaseState {
         actorRole: 'ADMIN',
         targetType: 'SETTING',
         targetId: 'global',
-        details: 'Home Food Marketplace database initialized with default verified cookers, products, and categories.',
+        details: 'Home Food Marketplace database initialized clean for fresh user testing.',
         timestamp: new Date().toISOString(),
       },
     ],
-    customerProfiles: [
-      {
-        id: 'prof-cust-1',
-        userId: 'usr-cust-1',
-        savedAddresses: [
-          {
-            id: 'addr-1',
-            label: 'Home',
-            street: 'Flat 4B, Palm Grove, Panampilly Nagar',
-            city: 'Kochi',
-            pincode: '682036',
-            latitude: 9.9680,
-            longitude: 76.3010,
-            isDefault: true,
-          },
-        ],
-        favouriteProductIds: ['prod-1', 'prod-2'],
-        favouriteCookerIds: ['cook-prof-1'],
-      },
-    ],
+    customerProfiles: [],
+    customRequests: [],
   };
 
   saveState();
@@ -353,6 +257,16 @@ export const db = {
     }
     return null;
   },
+  deleteProduct: (id: string) => {
+    const s = loadState();
+    const initialLen = s.products.length;
+    s.products = s.products.filter((p) => p.id !== id);
+    if (s.products.length !== initialLen) {
+      saveState();
+      return true;
+    }
+    return false;
+  },
 
   // Orders
   getOrders: () => loadState().orders,
@@ -448,6 +362,36 @@ export const db = {
       s.customerProfiles[idx] = { ...s.customerProfiles[idx], ...updates };
       saveState();
       return s.customerProfiles[idx];
+    }
+    return null;
+  },
+
+  // Custom AI Food Requests
+  getCustomRequests: () => loadState().customRequests || [],
+  getCustomRequestById: (id: string) => (loadState().customRequests || []).find((r) => r.id === id),
+  getCustomRequestsByCookerId: (cookerId: string) =>
+    (loadState().customRequests || []).filter((r) => r.cookerId === cookerId || r.cookerId === 'ALL'),
+  getCustomRequestsByCustomerId: (customerId: string) =>
+    (loadState().customRequests || []).filter((r) => r.customerId === customerId),
+  createCustomRequest: (req: CustomFoodRequest) => {
+    const s = loadState();
+    if (!s.customRequests) s.customRequests = [];
+    s.customRequests.unshift(req);
+    saveState();
+    return req;
+  },
+  updateCustomRequest: (id: string, updates: Partial<CustomFoodRequest>) => {
+    const s = loadState();
+    if (!s.customRequests) s.customRequests = [];
+    const idx = s.customRequests.findIndex((r) => r.id === id);
+    if (idx !== -1) {
+      s.customRequests[idx] = {
+        ...s.customRequests[idx],
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      };
+      saveState();
+      return s.customRequests[idx];
     }
     return null;
   },

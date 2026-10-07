@@ -2,194 +2,93 @@
   "users": [
     {
       "id": "usr-admin-1",
-      "name": "Platform Administrator",
-      "email": "admin@homefood.local",
+      "name": "Silu (Platform Administrator)",
+      "email": "silu@homefood.local",
       "phone": "+91 9876543210",
       "role": "ADMIN",
       "isVerified": true,
       "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.017Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
+      "createdAt": "2026-10-07T09:18:52.682Z",
+      "updatedAt": "2026-10-07T09:18:52.682Z"
     },
     {
-      "id": "usr-cook-1",
-      "name": "Anas Rahiman",
-      "email": "anas.bakery@homefood.local",
-      "phone": "+91 9988776655",
+      "id": "usr-1791364973743",
+      "name": "naswa",
+      "email": "naswa@gmail.com",
+      "phone": "5632145203",
       "role": "COOKER",
       "isVerified": true,
-      "avatarUrl": "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
+      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=naswa&backgroundColor=ea580c",
+      "createdAt": "2026-10-07T09:22:53.743Z",
+      "updatedAt": "2026-10-07T09:22:53.743Z"
     },
     {
-      "id": "usr-cook-2",
-      "name": "Priya Sharma",
-      "email": "priya.bakes@homefood.local",
-      "phone": "+91 9822334455",
+      "id": "usr-1791368950638",
+      "name": "Laila Homemade",
+      "email": "laila@kitchen.test",
+      "phone": "9876543210",
       "role": "COOKER",
       "isVerified": true,
-      "avatarUrl": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "usr-cook-3",
-      "name": "Chef Sarah Matthew",
-      "email": "sarah.sourdough@homefood.local",
-      "phone": "+91 9123456780",
-      "role": "COOKER",
-      "isVerified": true,
-      "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "usr-rider-1",
-      "name": "Arjun Das",
-      "email": "arjun.rider@homefood.local",
-      "phone": "+91 9776655443",
-      "role": "RIDER",
-      "isVerified": true,
-      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "usr-rider-2",
-      "name": "Kiran Verma",
-      "email": "kiran.rider@homefood.local",
-      "phone": "+91 9665544332",
-      "role": "RIDER",
-      "isVerified": true,
-      "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "usr-cust-1",
-      "name": "Amina Fathima",
-      "email": "amina.customer@homefood.local",
-      "phone": "+91 9554433221",
-      "role": "CUSTOMER",
-      "isVerified": true,
-      "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
+      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=Laila%20Homemade&backgroundColor=ea580c",
+      "createdAt": "2026-10-07T10:29:10.638Z",
+      "updatedAt": "2026-10-07T10:29:10.638Z"
     }
   ],
   "cookers": [
     {
-      "id": "cook-prof-1",
-      "userId": "usr-cook-1",
-      "storeName": "Anas Artisanal Home Bakery",
-      "bio": "Crafting luxury European-style cakes and velvet brownies using Belgian dark chocolate and pure butter. No artificial preservatives.",
-      "logoUrl": "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=300&auto=format&fit=crop&q=80",
-      "coverImageUrl": "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=1200&auto=format&fit=crop&q=80",
+      "id": "cook-1791364973744",
+      "userId": "usr-1791364973743",
+      "storeName": "Chemboott cokker",
+      "bio": "very tasty",
+      "logoUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80",
+      "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
       "status": "APPROVED",
-      "rating": 4.9,
-      "totalReviews": 84,
-      "totalOrders": 192,
-      "fssaiLicenseNumber": "FSSAI-21423019000124",
-      "address": "Baker Street Villa, Panampilly Nagar, Kochi, Kerala 682036",
+      "rating": 5,
+      "totalReviews": 0,
+      "totalOrders": 0,
+      "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
+      "address": "poovattuparamba",
       "latitude": 9.9675,
       "longitude": 76.2995,
       "platformDeliveryEnabled": true,
       "selfDeliveryEnabled": true,
       "customerPickupEnabled": true,
-      "selfDeliveryRadiusKm": 6,
-      "platformDeliveryRadiusKm": 12,
-      "minimumOrderValue": 250,
+      "selfDeliveryRadiusKm": 5,
+      "platformDeliveryRadiusKm": 10,
+      "minimumOrderValue": 200,
       "averagePrepTimeMinutes": 45,
       "maxDailyCapacity": 15,
       "isOpenToday": true,
-      "openingHours": "10:00 AM - 09:00 PM"
+      "openingHours": "10:00 AM - 08:00 PM"
     },
     {
-      "id": "cook-prof-2",
-      "userId": "usr-cook-2",
-      "storeName": "NutriBake by Priya",
-      "bio": "Specializing in guilt-free wholesome baking: jaggery cakes, almond flour low-sugar cookies, and eggless diabetic-friendly treats.",
-      "logoUrl": "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=300&auto=format&fit=crop&q=80",
+      "id": "cook-1791368950646",
+      "userId": "usr-1791368950638",
+      "storeName": "Lailas Malabar Oven",
+      "bio": "Freshly made homemade food prepared with love and wholesome ingredients.",
+      "logoUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80",
       "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
       "status": "APPROVED",
-      "rating": 4.8,
-      "totalReviews": 52,
-      "totalOrders": 110,
-      "fssaiLicenseNumber": "FSSAI-21423019000889",
-      "address": "Green Meadows Apt, Edappally, Kochi, Kerala 682024",
-      "latitude": 10.0248,
-      "longitude": 76.3082,
-      "platformDeliveryEnabled": true,
-      "selfDeliveryEnabled": false,
-      "customerPickupEnabled": true,
-      "selfDeliveryRadiusKm": 4,
-      "platformDeliveryRadiusKm": 10,
-      "minimumOrderValue": 180,
-      "averagePrepTimeMinutes": 30,
-      "maxDailyCapacity": 20,
-      "isOpenToday": true,
-      "openingHours": "09:00 AM - 07:00 PM"
-    },
-    {
-      "id": "cook-prof-3",
-      "userId": "usr-cook-3",
-      "storeName": "Wild Yeast Sourdough & Hearth",
-      "bio": "Authentic 36-hour cold fermented wild sourdough loaves, crispy artisanal focaccia with rosemary and Kalamata olives.",
-      "logoUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&auto=format&fit=crop&q=80",
-      "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
-      "status": "APPROVED",
-      "rating": 4.9,
-      "totalReviews": 67,
-      "totalOrders": 145,
-      "fssaiLicenseNumber": "FSSAI-21423019000452",
-      "address": "Fort Hearth Studio, Fort Kochi, Kerala 682001",
-      "latitude": 9.9658,
-      "longitude": 76.2427,
+      "rating": 5,
+      "totalReviews": 0,
+      "totalOrders": 0,
+      "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
+      "address": "Kochi, Kerala",
+      "latitude": 9.9675,
+      "longitude": 76.2995,
       "platformDeliveryEnabled": true,
       "selfDeliveryEnabled": true,
       "customerPickupEnabled": true,
-      "selfDeliveryRadiusKm": 8,
-      "platformDeliveryRadiusKm": 15,
+      "selfDeliveryRadiusKm": 5,
+      "platformDeliveryRadiusKm": 10,
       "minimumOrderValue": 200,
-      "averagePrepTimeMinutes": 60,
-      "maxDailyCapacity": 12,
+      "averagePrepTimeMinutes": 45,
+      "maxDailyCapacity": 15,
       "isOpenToday": true,
-      "openingHours": "08:30 AM - 06:00 PM"
+      "openingHours": "10:00 AM - 08:00 PM"
     }
   ],
-  "riders": [
-    {
-      "id": "rider-prof-1",
-      "userId": "usr-rider-1",
-      "vehicleType": "EV",
-      "vehicleNumber": "KL-07-CD-4102",
-      "currentLatitude": 9.9701,
-      "currentLongitude": 76.2981,
-      "status": "ONLINE",
-      "isActive": true,
-      "deliveryRadiusKm": 8,
-      "rating": 4.9,
-      "totalDeliveries": 312,
-      "todayEarnings": 450,
-      "totalEarnings": 21800
-    },
-    {
-      "id": "rider-prof-2",
-      "userId": "usr-rider-2",
-      "vehicleType": "BIKE",
-      "vehicleNumber": "KL-07-BQ-8819",
-      "currentLatitude": 10.021,
-      "currentLongitude": 76.3105,
-      "status": "ONLINE",
-      "isActive": true,
-      "deliveryRadiusKm": 10,
-      "rating": 4.8,
-      "totalDeliveries": 189,
-      "todayEarnings": 270,
-      "totalEarnings": 14200
-    }
-  ],
+  "riders": [],
   "categories": [
     {
       "id": "cat-1",
@@ -653,620 +552,108 @@
   ],
   "products": [
     {
-      "id": "prod-1",
-      "cookerId": "cook-prof-1",
-      "name": "Belgian Dark Chocolate Truffle Cake (500g)",
-      "slug": "belgian-dark-chocolate-truffle-cake",
-      "description": "Decadent, velvety truffle cake made with 70% pure cocoa, organic cane sugar, and farm dairy butter. Perfectly balanced sweetness with deep cocoa notes.",
-      "categoryId": "cat-1",
-      "subcategoryId": "sub-1",
-      "tagIds": [
-        "tag-9",
-        "tag-10",
-        "tag-11",
-        "tag-12",
-        "tag-13"
-      ],
-      "price": 650,
+      "id": "prod-1791368950956",
+      "cookerId": "cook-1791368950646",
+      "name": "Cardamom Honey Marble Cake",
+      "slug": "cardamom-honey-marble-cake-0955",
+      "description": "Hand-beaten cardamom infused marble cake baked fresh in small batches.",
+      "categoryId": "cat-cakes-desserts",
+      "tagIds": [],
+      "price": 480,
       "imageUrls": [
-        "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=800&auto=format&fit=crop&q=80"
+        "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800"
       ],
-      "netWeightGrams": 500,
-      "servingSizeGrams": 100,
-      "servingsCount": 5,
-      "prepTimeMinutes": 45,
-      "maxWaitLimitMinutes": 45,
-      "isAvailable": true,
-      "stockCount": 8,
-      "dailyCapacity": 10,
-      "bookedToday": 2,
-      "supportsPreorder": true,
-      "status": "APPROVED",
-      "ingredients": [
-        {
-          "id": "pi-1",
-          "ingredientId": "ing-1",
-          "name": "All-Purpose Flour (Maida)",
-          "quantity": 120,
-          "unit": "g"
-        },
-        {
-          "id": "pi-2",
-          "ingredientId": "ing-8",
-          "name": "Dark Chocolate (70% Cocoa)",
-          "quantity": 130,
-          "unit": "g"
-        },
-        {
-          "id": "pi-3",
-          "ingredientId": "ing-4",
-          "name": "Pure Butter (Dairy)",
-          "quantity": 80,
-          "unit": "g"
-        },
-        {
-          "id": "pi-4",
-          "ingredientId": "ing-3",
-          "name": "Granulated Cane Sugar",
-          "quantity": 90,
-          "unit": "g"
-        },
-        {
-          "id": "pi-5",
-          "ingredientId": "ing-7",
-          "name": "Farm Fresh Egg (Large)",
-          "quantity": 2,
-          "unit": "pieces"
-        },
-        {
-          "id": "pi-6",
-          "ingredientId": "ing-6",
-          "name": "Whole Milk",
-          "quantity": 60,
-          "unit": "ml"
-        }
-      ],
-      "detectedAllergens": [
-        "Gluten",
-        "Wheat",
-        "Milk",
-        "Egg",
-        "Soy"
-      ],
-      "nutrition": {
-        "total": {
-          "calories": 1980,
-          "protein": 34.5,
-          "carbs": 215,
-          "fat": 108.5,
-          "saturatedFat": 62,
-          "sugar": 128,
-          "fiber": 18.2,
-          "sodium": 480
-        },
-        "per100g": {
-          "calories": 396,
-          "protein": 6.9,
-          "carbs": 43,
-          "fat": 21.7,
-          "saturatedFat": 12.4,
-          "sugar": 25.6,
-          "fiber": 3.6,
-          "sodium": 96
-        },
-        "perServing": {
-          "calories": 396,
-          "protein": 6.9,
-          "carbs": 43,
-          "fat": 21.7,
-          "saturatedFat": 12.4,
-          "sugar": 25.6,
-          "fiber": 3.6,
-          "sodium": 96
-        },
-        "servingWeightGrams": 100,
-        "servingsPerPackage": 5
-      },
-      "aiAnalysis": {
-        "summary": "Rich in antioxidants from premium 70% dark chocolate. High calorie and moderate-to-high sugar content suited for celebrations and energy-dense indulgences.",
-        "healthGrade": "B",
-        "sugarLevel": "Moderate",
-        "calorieDensity": "High",
-        "keyBenefits": [
-          "Rich flavonoids from authentic dark cocoa",
-          "Wholesome dairy fats without palm oil or margarine"
-        ],
-        "dietaryCautions": [
-          "Contains dairy, eggs, and gluten allergens",
-          "Customers managing blood sugar should enjoy in controlled portions"
-        ],
-        "disclaimer": "Nutrition information is an estimate calculated directly from verified raw ingredient database values.",
-        "suggestedAlternatives": "Try NutriBake Oat & Almond Cookies for a lower-sugar daily alternative."
-      },
-      "rating": 4.9,
-      "reviewCount": 38,
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "prod-2",
-      "cookerId": "cook-prof-2",
-      "name": "Wholesome Low-Sugar Oat & Almond Cookies (Pack of 8)",
-      "slug": "low-sugar-oat-almond-cookies",
-      "description": "Crispy, nutty, fiber-rich artisan cookies sweetened naturally with organic raw honey and roasted California almonds. 100% refined sugar-free.",
-      "categoryId": "cat-3",
-      "subcategoryId": "sub-7",
-      "tagIds": [
-        "tag-5",
-        "tag-7",
-        "tag-8",
-        "tag-1",
-        "tag-12"
-      ],
-      "price": 320,
-      "imageUrls": [
-        "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&auto=format&fit=crop&q=80"
-      ],
-      "netWeightGrams": 280,
-      "servingSizeGrams": 35,
-      "servingsCount": 8,
-      "prepTimeMinutes": 25,
-      "maxWaitLimitMinutes": 240,
-      "isAvailable": true,
-      "stockCount": 15,
-      "dailyCapacity": 20,
-      "bookedToday": 4,
-      "supportsPreorder": true,
-      "status": "APPROVED",
-      "ingredients": [
-        {
-          "id": "pi-7",
-          "ingredientId": "ing-9",
-          "name": "Rolled Oats",
-          "quantity": 120,
-          "unit": "g"
-        },
-        {
-          "id": "pi-8",
-          "ingredientId": "ing-10",
-          "name": "Raw Almonds",
-          "quantity": 70,
-          "unit": "g"
-        },
-        {
-          "id": "pi-9",
-          "ingredientId": "ing-11",
-          "name": "Organic Honey",
-          "quantity": 50,
-          "unit": "g"
-        },
-        {
-          "id": "pi-10",
-          "ingredientId": "ing-4",
-          "name": "Pure Butter (Dairy)",
-          "quantity": 40,
-          "unit": "g"
-        }
-      ],
-      "detectedAllergens": [
-        "Tree nuts",
-        "Milk"
-      ],
-      "nutrition": {
-        "total": {
-          "calories": 1240,
-          "protein": 36.2,
-          "carbs": 135,
-          "fat": 62.4,
-          "saturatedFat": 21,
-          "sugar": 44,
-          "fiber": 21.5,
-          "sodium": 260
-        },
-        "per100g": {
-          "calories": 442,
-          "protein": 12.9,
-          "carbs": 48.2,
-          "fat": 22.2,
-          "saturatedFat": 7.5,
-          "sugar": 15.7,
-          "fiber": 7.6,
-          "sodium": 92
-        },
-        "perServing": {
-          "calories": 155,
-          "protein": 4.5,
-          "carbs": 16.9,
-          "fat": 7.8,
-          "saturatedFat": 2.6,
-          "sugar": 5.5,
-          "fiber": 2.7,
-          "sodium": 32
-        },
-        "servingWeightGrams": 35,
-        "servingsPerPackage": 8
-      },
-      "aiAnalysis": {
-        "summary": "High dietary fiber and heart-healthy monounsaturated fats from almonds. Very low sugar impact with clean satiety for fitness and breakfast.",
-        "healthGrade": "A",
-        "sugarLevel": "Low",
-        "calorieDensity": "Moderate",
-        "keyBenefits": [
-          "7.6g prebiotic beta-glucan fiber per 100g",
-          "No white refined sugar or artificial syrups",
-          "Eggless & vegetarian friendly"
-        ],
-        "dietaryCautions": [
-          "Contains Tree Nuts (Almonds) and Milk (Butter)"
-        ],
-        "disclaimer": "Nutrition information is an estimate calculated directly from verified raw ingredient database values."
-      },
-      "rating": 4.8,
-      "reviewCount": 29,
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "prod-3",
-      "cookerId": "cook-prof-3",
-      "name": "36-Hour Naturally Leavened Wild Sourdough Loaf (700g)",
-      "slug": "wild-sourdough-loaf",
-      "description": "Golden blistered crust with an airy, tender crumb. Slow fermented over 36 hours for easy digestion and complex hazelnut-sour notes. Just wild culture, water, unbleached flour, and sea salt.",
-      "categoryId": "cat-2",
-      "subcategoryId": "sub-4",
-      "tagIds": [
-        "tag-3",
-        "tag-1",
-        "tag-2",
-        "tag-8",
-        "tag-12",
-        "tag-10"
-      ],
-      "price": 280,
-      "imageUrls": [
-        "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80"
-      ],
-      "netWeightGrams": 700,
-      "servingSizeGrams": 70,
-      "servingsCount": 10,
-      "prepTimeMinutes": 50,
-      "maxWaitLimitMinutes": 180,
-      "isAvailable": true,
-      "stockCount": 6,
-      "dailyCapacity": 12,
-      "bookedToday": 3,
-      "supportsPreorder": true,
-      "status": "APPROVED",
-      "ingredients": [
-        {
-          "id": "pi-11",
-          "ingredientId": "ing-2",
-          "name": "Whole Wheat Flour (Atta)",
-          "quantity": 280,
-          "unit": "g"
-        },
-        {
-          "id": "pi-12",
-          "ingredientId": "ing-1",
-          "name": "All-Purpose Flour (Maida)",
-          "quantity": 220,
-          "unit": "g"
-        },
-        {
-          "id": "pi-13",
-          "ingredientId": "ing-13",
-          "name": "Sourdough Culture & Spring Water",
-          "quantity": 200,
-          "unit": "g"
-        },
-        {
-          "id": "pi-14",
-          "ingredientId": "ing-14",
-          "name": "Extra Virgin Olive Oil",
-          "quantity": 15,
-          "unit": "ml"
-        }
-      ],
-      "detectedAllergens": [
-        "Gluten",
-        "Wheat"
-      ],
-      "nutrition": {
-        "total": {
-          "calories": 1780,
-          "protein": 68,
-          "carbs": 350,
-          "fat": 22,
-          "saturatedFat": 3.2,
-          "sugar": 4,
-          "fiber": 36,
-          "sodium": 490
-        },
-        "per100g": {
-          "calories": 254,
-          "protein": 9.7,
-          "carbs": 50,
-          "fat": 3.1,
-          "saturatedFat": 0.4,
-          "sugar": 0.5,
-          "fiber": 5.1,
-          "sodium": 70
-        },
-        "perServing": {
-          "calories": 178,
-          "protein": 6.8,
-          "carbs": 35,
-          "fat": 2.2,
-          "saturatedFat": 0.3,
-          "sugar": 0.4,
-          "fiber": 3.6,
-          "sodium": 49
-        },
-        "servingWeightGrams": 70,
-        "servingsPerPackage": 10
-      },
-      "aiAnalysis": {
-        "summary": "Remarkably clean macronutrient profile with near-zero sugar and high complex carbs. Long fermentation partially breaks down phytates and gluten proteins.",
-        "healthGrade": "A",
-        "sugarLevel": "Low",
-        "calorieDensity": "Low",
-        "keyBenefits": [
-          "100% Vegan with no dairy or eggs",
-          "Natural wild fermentation aids gut microbiome",
-          "Sustained energy release"
-        ],
-        "dietaryCautions": [
-          "Contains gluten and wheat proteins"
-        ],
-        "disclaimer": "Nutrition information is an estimate calculated directly from verified raw ingredient database values."
-      },
-      "rating": 4.9,
-      "reviewCount": 42,
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
-    },
-    {
-      "id": "prod-4",
-      "cookerId": "cook-prof-1",
-      "name": "Eggless Silk Chocolate Brownie Box (6 Pieces)",
-      "slug": "eggless-silk-chocolate-brownie-box",
-      "description": "Thick, crackly top, ultra-fudgy center. Made completely eggless with pure melted chocolate, unsalted farm butter, and Dutch cocoa.",
-      "categoryId": "cat-3",
-      "subcategoryId": "sub-6",
-      "tagIds": [
-        "tag-1",
-        "tag-9",
-        "tag-11",
-        "tag-12"
-      ],
-      "price": 450,
-      "imageUrls": [
-        "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800&auto=format&fit=crop&q=80"
-      ],
-      "netWeightGrams": 420,
-      "servingSizeGrams": 70,
+      "netWeightGrams": 582,
+      "servingSizeGrams": 97,
       "servingsCount": 6,
-      "prepTimeMinutes": 35,
+      "prepTimeMinutes": 50,
       "maxWaitLimitMinutes": 120,
       "isAvailable": true,
       "stockCount": 10,
-      "dailyCapacity": 15,
-      "bookedToday": 5,
+      "dailyCapacity": 10,
+      "bookedToday": 0,
       "supportsPreorder": true,
       "status": "APPROVED",
       "ingredients": [
         {
-          "id": "pi-15",
-          "ingredientId": "ing-8",
-          "name": "Dark Chocolate (70% Cocoa)",
+          "name": "All-Purpose Flour (Maida)",
+          "quantity": 250,
+          "unit": "g"
+        },
+        {
+          "name": "Pure Butter (Dairy)",
           "quantity": 150,
           "unit": "g"
         },
         {
-          "id": "pi-16",
-          "ingredientId": "ing-4",
-          "name": "Pure Butter (Dairy)",
-          "quantity": 90,
-          "unit": "g"
-        },
-        {
-          "id": "pi-17",
-          "ingredientId": "ing-1",
-          "name": "All-Purpose Flour (Maida)",
-          "quantity": 90,
-          "unit": "g"
-        },
-        {
-          "id": "pi-18",
-          "ingredientId": "ing-3",
           "name": "Granulated Cane Sugar",
-          "quantity": 90,
+          "quantity": 180,
           "unit": "g"
-        },
-        {
-          "id": "pi-19",
-          "ingredientId": "ing-6",
-          "name": "Whole Milk",
-          "quantity": 50,
-          "unit": "ml"
         }
       ],
       "detectedAllergens": [
         "Gluten",
         "Wheat",
-        "Milk",
-        "Soy"
+        "Milk"
       ],
       "nutrition": {
         "total": {
-          "calories": 1950,
-          "protein": 26.5,
-          "carbs": 210,
-          "fat": 112,
-          "saturatedFat": 68,
-          "sugar": 125,
-          "fiber": 19.5,
-          "sodium": 390
+          "calories": 2682,
+          "protein": 27,
+          "carbs": 370.8,
+          "fat": 124.2,
+          "saturatedFat": 77.6,
+          "sugar": 180.5,
+          "fiber": 6.8,
+          "sodium": 971
         },
         "per100g": {
-          "calories": 464,
-          "protein": 6.3,
-          "carbs": 50,
-          "fat": 26.6,
-          "saturatedFat": 16.1,
-          "sugar": 29.7,
-          "fiber": 4.6,
-          "sodium": 92
+          "calories": 462,
+          "protein": 4.7,
+          "carbs": 63.9,
+          "fat": 21.4,
+          "saturatedFat": 13.4,
+          "sugar": 31.1,
+          "fiber": 1.2,
+          "sodium": 167
         },
         "perServing": {
-          "calories": 325,
-          "protein": 4.4,
-          "carbs": 35,
-          "fat": 18.6,
-          "saturatedFat": 11.3,
-          "sugar": 20.8,
-          "fiber": 3.2,
-          "sodium": 65
+          "calories": 447,
+          "protein": 4.5,
+          "carbs": 61.8,
+          "fat": 20.7,
+          "saturatedFat": 12.9,
+          "sugar": 30.1,
+          "fiber": 1.1,
+          "sodium": 162
         },
-        "servingWeightGrams": 70,
+        "servingWeightGrams": 97,
         "servingsPerPackage": 6
       },
       "aiAnalysis": {
-        "summary": "Decadent bakery treat with premium cocoa richness. Eggless formulation makes it suitable for vegetarian celebrations.",
-        "healthGrade": "B",
-        "sugarLevel": "Moderate",
+        "summary": "Cardamom Honey Marble Cake delivers 447 kcal and 4.5g protein per serving (97g). Its sugar profile is classified as high with high calorie density. Freshly made with 3 transparent whole ingredients.",
+        "healthGrade": "D",
+        "sugarLevel": "High",
         "calorieDensity": "High",
         "keyBenefits": [
-          "100% Eggless recipe",
-          "Rich pure butter texture without artificial shortening"
+          "Prepared using honest homemade kitchen ingredients without chemical preservatives or artificial shelf stabilizers."
         ],
         "dietaryCautions": [
-          "Contains dairy and gluten"
+          "Contains verified allergens: Gluten, Wheat, Milk.",
+          "Contains 30.1g sugar per serving. Best enjoyed mindfully for celebrations.",
+          "Calorie-dense indulgence with 447 kcal per serving."
         ],
-        "disclaimer": "Nutrition information is an estimate calculated directly from verified raw ingredient database values."
+        "disclaimer": "Nutrition information is an estimate calculated directly from entered ingredients and verified database values. Not intended as medical advice.",
+        "suggestedAlternatives": "Looking for low-sugar guilt-free bakes? Explore our Oat & Almond Honey Cookies or Sourdough loaves."
       },
-      "rating": 4.8,
-      "reviewCount": 22,
-      "createdAt": "2026-10-07T07:03:35.019Z",
-      "updatedAt": "2026-10-07T07:03:35.019Z"
+      "rating": 5,
+      "reviewCount": 0,
+      "createdAt": "2026-10-07T10:29:10.956Z",
+      "updatedAt": "2026-10-07T10:29:10.956Z"
     }
   ],
-  "orders": [
-    {
-      "id": "ord-seed-101",
-      "orderNumber": "HF-2026-901",
-      "customerId": "usr-cust-1",
-      "customerName": "Amina Fathima",
-      "customerPhone": "+91 9554433221",
-      "cookerId": "cook-prof-1",
-      "cookerStoreName": "Anas Artisanal Home Bakery",
-      "cookerAddress": "Baker Street Villa, Panampilly Nagar, Kochi",
-      "cookerPhone": "+91 9988776655",
-      "items": [
-        {
-          "productId": "prod-1",
-          "productName": "Belgian Dark Chocolate Truffle Cake (500g)",
-          "productImage": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80",
-          "unitPrice": 650,
-          "quantity": 1,
-          "totalPrice": 650
-        }
-      ],
-      "subtotal": 650,
-      "deliveryFee": 30,
-      "platformFee": 5,
-      "discountAmount": 50,
-      "couponCode": "WELCOME50",
-      "totalAmount": 635,
-      "platformCommission": 65,
-      "netCookerEarnings": 585,
-      "deliveryAddress": {
-        "id": "addr-1",
-        "label": "Home",
-        "street": "Flat 4B, Palm Grove, Panampilly Nagar",
-        "city": "Kochi",
-        "pincode": "682036",
-        "latitude": 9.968,
-        "longitude": 76.301,
-        "isDefault": true
-      },
-      "deliveryMode": "PLATFORM_DELIVERY",
-      "deliverySlotDate": "2026-10-07",
-      "deliverySlotTime": "01:00 PM - 02:00 PM",
-      "isPreorder": false,
-      "paymentMethod": "UPI",
-      "paymentStatus": "SUCCESS",
-      "status": "DELIVERED",
-      "timeline": [
-        {
-          "status": "PENDING",
-          "timestamp": "2026-10-07T05:03:35.363Z",
-          "description": "Order placed & paid via UPI"
-        },
-        {
-          "status": "ACCEPTED",
-          "timestamp": "2026-10-07T05:15:35.363Z",
-          "description": "Accepted by Anas Artisanal Home Bakery"
-        },
-        {
-          "status": "PREPARING",
-          "timestamp": "2026-10-07T05:33:35.363Z",
-          "description": "Freshly baking in small batch"
-        },
-        {
-          "status": "READY_FOR_PICKUP",
-          "timestamp": "2026-10-07T06:03:35.363Z",
-          "description": "Packed & ready at home kitchen"
-        },
-        {
-          "status": "RIDER_ASSIGNED",
-          "timestamp": "2026-10-07T06:09:35.363Z",
-          "description": "Assigned to Arjun Das (KL-07-CD-4102)"
-        },
-        {
-          "status": "PICKED_UP",
-          "timestamp": "2026-10-07T06:21:35.363Z",
-          "description": "Picked up from kitchen"
-        },
-        {
-          "status": "OUT_FOR_DELIVERY",
-          "timestamp": "2026-10-07T06:33:35.363Z",
-          "description": "On the way to customer"
-        },
-        {
-          "status": "DELIVERED",
-          "timestamp": "2026-10-07T06:51:35.363Z",
-          "description": "Safely handed over to customer"
-        }
-      ],
-      "assignedRiderId": "rider-prof-1",
-      "assignedRiderName": "Arjun Das",
-      "assignedRiderPhone": "+91 9776655443",
-      "maxWaitLimitMinutes": 45,
-      "createdAt": "2026-10-07T05:03:35.363Z",
-      "updatedAt": "2026-10-07T06:51:35.363Z"
-    }
-  ],
-  "reviews": [
-    {
-      "id": "rev-1",
-      "orderId": "ord-seed-101",
-      "productId": "prod-1",
-      "customerId": "usr-cust-1",
-      "customerName": "Amina Fathima",
-      "cookerId": "cook-prof-1",
-      "productRating": 5,
-      "cookerRating": 5,
-      "deliveryRating": 5,
-      "tasteRating": 5,
-      "freshnessRating": 5,
-      "packagingRating": 5,
-      "comment": "Absolutely heavenly! The pure dark cocoa notes and melted truffle core were exquisite. The ingredient transparency gave me so much peace of mind.",
-      "createdAt": "2026-10-07T07:03:35.363Z",
-      "isVerifiedPurchase": true
-    }
-  ],
+  "orders": [],
+  "reviews": [],
   "coupons": [
     {
       "id": "coup-1",
@@ -1277,7 +664,7 @@
       "validFrom": "2026-01-01",
       "validUntil": "2027-12-31",
       "usageLimit": 1000,
-      "timesUsed": 42,
+      "timesUsed": 0,
       "isActive": true,
       "description": "Flat ₹50 OFF on your first delicious homemade order (min ₹250)"
     },
@@ -1291,7 +678,7 @@
       "validFrom": "2026-01-01",
       "validUntil": "2027-12-31",
       "usageLimit": 500,
-      "timesUsed": 19,
+      "timesUsed": 0,
       "isActive": true,
       "description": "10% OFF up to ₹100 on artisanal orders above ₹400"
     }
@@ -1312,6 +699,61 @@
   },
   "auditLogs": [
     {
+      "id": "log-1791369872604",
+      "action": "PRODUCT_DELETED",
+      "actorId": "cooker",
+      "actorEmail": "cooker@kitchen",
+      "actorRole": "COOKER",
+      "targetType": "PRODUCT",
+      "targetId": "prod-1791365089312",
+      "details": "Product prod-1791365089312 was deleted from the kitchen menu.",
+      "timestamp": "2026-10-07T10:44:32.604Z"
+    },
+    {
+      "id": "log-1791368950958",
+      "action": "PRODUCT_CREATED",
+      "actorId": "usr-1791368950638",
+      "actorEmail": "Lailas Malabar Oven",
+      "actorRole": "COOKER",
+      "targetType": "PRODUCT",
+      "targetId": "prod-1791368950956",
+      "details": "Product \"Cardamom Honey Marble Cake\" created with calculated nutrition and allergen tags.",
+      "timestamp": "2026-10-07T10:29:10.959Z"
+    },
+    {
+      "id": "log-1791368950647",
+      "action": "COOKER_REGISTERED_ACTIVE",
+      "actorId": "usr-1791368950638",
+      "actorEmail": "laila@kitchen.test",
+      "actorRole": "COOKER",
+      "targetType": "COOKER",
+      "targetId": "cook-1791368950646",
+      "details": "Cooker \"Lailas Malabar Oven\" registered and verified for testing.",
+      "timestamp": "2026-10-07T10:29:10.647Z"
+    },
+    {
+      "id": "log-1791365089313",
+      "action": "PRODUCT_CREATED",
+      "actorId": "usr-1791364973743",
+      "actorEmail": "Chemboott cokker",
+      "actorRole": "COOKER",
+      "targetType": "PRODUCT",
+      "targetId": "prod-1791365089312",
+      "details": "Product \"cake\" created with calculated nutrition and allergen tags.",
+      "timestamp": "2026-10-07T09:24:49.314Z"
+    },
+    {
+      "id": "log-1791364973745",
+      "action": "COOKER_REGISTERED_ACTIVE",
+      "actorId": "usr-1791364973743",
+      "actorEmail": "naswa@gmail.com",
+      "actorRole": "COOKER",
+      "targetType": "COOKER",
+      "targetId": "cook-1791364973744",
+      "details": "Cooker \"Chemboott cokker\" registered and verified for testing.",
+      "timestamp": "2026-10-07T09:22:53.745Z"
+    },
+    {
       "id": "log-1",
       "action": "PLATFORM_INITIALIZED",
       "actorId": "usr-admin-1",
@@ -1319,33 +761,61 @@
       "actorRole": "ADMIN",
       "targetType": "SETTING",
       "targetId": "global",
-      "details": "Home Food Marketplace database initialized with default verified cookers, products, and categories.",
-      "timestamp": "2026-10-07T07:03:35.363Z"
+      "details": "Home Food Marketplace database initialized clean for fresh user testing.",
+      "timestamp": "2026-10-07T09:20:17.635Z"
     }
   ],
-  "customerProfiles": [
+  "customerProfiles": [],
+  "customRequests": [
     {
-      "id": "prof-cust-1",
-      "userId": "usr-cust-1",
-      "savedAddresses": [
+      "id": "req-1791375370052-76",
+      "requestNumber": "CR-370052",
+      "customerId": "cust-anon",
+      "customerName": "Anas Customer",
+      "customerPhone": "+91 9846012345",
+      "cookerId": "cook-prof-1",
+      "cookerStoreName": "Anas Artisanal Home Bakery",
+      "dishName": "Malabar Spiced Grilled Chicken Bowl",
+      "dishDescription": "High protein powerhouse",
+      "ingredients": [
         {
-          "id": "addr-1",
-          "label": "Home",
-          "street": "Flat 4B, Palm Grove, Panampilly Nagar",
-          "city": "Kochi",
-          "pincode": "682036",
-          "latitude": 9.968,
-          "longitude": 76.301,
-          "isDefault": true
+          "name": "Chicken Breast",
+          "amount": "300g"
+        },
+        {
+          "name": "Quinoa",
+          "amount": "100g"
         }
       ],
-      "favouriteProductIds": [
-        "prod-1",
-        "prod-2"
+      "cookingSteps": [
+        "1. Marinate chicken",
+        "2. Grill for 15 mins"
       ],
-      "favouriteCookerIds": [
-        "cook-prof-1"
-      ]
+      "macros": {
+        "calories": 450,
+        "protein": 42,
+        "carbs": 22,
+        "fat": 12,
+        "sugar": 3,
+        "fiber": 6
+      },
+      "servings": 2,
+      "specialNotes": "",
+      "deliveryAddress": {
+        "street": "Flat 4B, MG Road",
+        "city": "Kochi",
+        "pincode": "682016"
+      },
+      "status": "DELIVERED",
+      "createdAt": "2026-10-07T12:16:10.052Z",
+      "updatedAt": "2026-10-07T12:16:10.428Z",
+      "quotedPrice": 380,
+      "quotedPrepTimeMinutes": 40,
+      "cookerNotes": "Freshly made with wholesome ingredients.",
+      "deliveryMode": "SELF_DELIVERY",
+      "cookerSelfDelivery": true,
+      "aiDeliveryFallbackTriggered": true,
+      "aiDeliveryFallbackMessage": "⚠️ AI Delivery Fallback: No delivery riders are online in your zone right now! AI has automatically assigned this order to Cooker Self-Delivery so the fresh homemade dish reaches the customer without delay. Cooker keeps 100% of the delivery fee."
     }
   ]
 }

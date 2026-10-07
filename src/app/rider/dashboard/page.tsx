@@ -93,6 +93,34 @@ export default function RiderDashboard() {
     }
   };
 
+  if (!loading && (!currentUser || currentUser.role !== 'RIDER')) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-xs">
+          <Bike className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Rider Portal Access</h2>
+        <p className="text-xs text-gray-500">
+          You need an active Delivery Rider account to view delivery requests and complete order drop-offs.
+        </p>
+        <div className="flex flex-col gap-2 pt-2">
+          <Link
+            href="/auth/register?role=RIDER"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2.5 rounded-2xl shadow-xs transition-colors"
+          >
+            Register as Delivery Rider →
+          </Link>
+          <Link
+            href="/auth/login"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs py-2.5 rounded-2xl transition-colors"
+          >
+            Sign In with Existing Account
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Rider Header Card */}

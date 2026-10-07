@@ -342,3 +342,56 @@ export interface OTPRecord {
   lastSentAt: number;
   isUsed: boolean;
 }
+
+export type CustomRequestStatus =
+  | 'PENDING_COOKER_QUOTE'
+  | 'QUOTE_SUBMITTED'
+  | 'ACCEPTED'
+  | 'COOKING'
+  | 'READY_FOR_DELIVERY'
+  | 'RIDER_ASSIGNED'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'REJECTED';
+
+export interface CustomFoodRequest {
+  id: string;
+  requestNumber: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  cookerId: string; // Specific cooker ID or 'ALL'
+  cookerStoreName: string;
+  dishName: string;
+  dishDescription: string;
+  ingredients: { name: string; amount: string; notes?: string }[];
+  cookingSteps: string[];
+  macros: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    sugar: number;
+    fiber: number;
+  };
+  servings: number;
+  specialNotes?: string;
+  deliveryAddress: {
+    street: string;
+    city: string;
+    pincode: string;
+    landmark?: string;
+  };
+  quotedPrice?: number;
+  quotedPrepTimeMinutes?: number;
+  cookerNotes?: string;
+  deliveryMode?: 'PLATFORM_DELIVERY' | 'SELF_DELIVERY' | 'CUSTOMER_PICKUP';
+  cookerSelfDelivery?: boolean;
+  assignedRiderId?: string;
+  assignedRiderName?: string;
+  aiDeliveryFallbackTriggered?: boolean;
+  aiDeliveryFallbackMessage?: string;
+  status: CustomRequestStatus;
+  createdAt: string;
+  updatedAt: string;
+}

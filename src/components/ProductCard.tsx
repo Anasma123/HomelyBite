@@ -38,8 +38,19 @@ export default function ProductCard({ product, cooker, distanceKm }: ProductCard
         <img
           src={product.imageUrls[0] || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600'}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
+            product.isAvailable === false ? 'grayscale opacity-75' : ''
+          }`}
         />
+
+        {/* Unavailable overlay badge */}
+        {product.isAvailable === false && (
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <span className="bg-rose-600 text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
+              Unavailable
+            </span>
+          </div>
+        )}
 
         {/* Rating chip */}
         <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-semibold text-gray-800 shadow-xs flex items-center gap-1">
@@ -129,14 +140,19 @@ export default function ProductCard({ product, cooker, distanceKm }: ProductCard
 
           <button
             type="button"
+            disabled={product.isAvailable === false}
             onClick={handleAddToCart}
             className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              addedAnimation
+              product.isAvailable === false
+                ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                : addedAnimation
                 ? 'bg-green-600 text-white'
                 : 'bg-orange-600 hover:bg-orange-700 text-white shadow-xs hover:shadow-md'
             }`}
           >
-            {addedAnimation ? (
+            {product.isAvailable === false ? (
+              'Sold Out'
+            ) : addedAnimation ? (
               <>
                 <Check className="w-3.5 h-3.5" />
                 Added

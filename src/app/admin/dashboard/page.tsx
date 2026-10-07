@@ -18,9 +18,12 @@ import {
   FileText,
   RotateCw,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useAuth } from '@/lib/context/AuthContext';
 import { CookerProfile, Product, DeliveryPersonProfile, Category, MasterIngredient, AuditLog } from '@/lib/types';
 
 export default function AdminDashboard() {
+  const { currentUser, currentRole, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'METRICS' | 'COOKERS' | 'RIDERS' | 'PRODUCTS' | 'CATEGORIES' | 'INGREDIENTS' | 'SETTINGS' | 'LOGS'>('METRICS');
 
   const [stats, setStats] = useState<any>(null);
@@ -196,6 +199,26 @@ export default function AdminDashboard() {
       alert('Failed to save settings');
     }
   };
+
+  if (!authLoading && (!currentUser || currentRole !== 'ADMIN')) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto shadow-xs">
+          <ShieldCheck className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900">Administrator Access Required</h2>
+        <p className="text-xs text-gray-500">
+          This portal is reserved for platform administrators. Please sign in with your administrator credentials.
+        </p>
+        <Link
+          href="/auth/login"
+          className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-6 py-2.5 rounded-2xl shadow-xs transition-colors"
+        >
+          Sign In as Admin (silu / 123) →
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">

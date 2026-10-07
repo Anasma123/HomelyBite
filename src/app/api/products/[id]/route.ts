@@ -45,3 +45,33 @@ export async function PATCH(
     return NextResponse.json({ success: false, message: 'Error updating product.' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await context.params;
+    const deleted = db.deleteProduct(id);
+    if (!deleted) {
+      return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
+    }
+
+    db.addAuditLog({
+      id: `log-${Date.now()}`,
+      action: 'PRODUCT_DELETED',
+      actorId: 'cooker',
+      actorEmail: 'cooker@kitchen',
+      actorRole: 'COOKER',
+      targetType: 'PRODUCT',
+      targetId: id,
+      details: `Product ${id} was deleted from the kitchen menu.`,
+      timestamp: new Date().toISOString(),
+    });
+
+    return NextResponse.json({ success: true, message: 'Product deleted successfully.' });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: 'Error deleting product.' }, { status: 500 });
+  }
+}
+

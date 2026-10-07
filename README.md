@@ -1,4 +1,4 @@
-# 🥖 HomeFood Marketplace Web Application
+# 🍽️ HomelyBite
 ### Home Food & Bakery Marketplace + AI Nutrition + Smart Search + Intelligent Delivery Platform
 
 > **USP:** Discover homemade food from trusted local cooks, know exactly what's inside it with transparent ingredients and calculated nutrition, and get it delivered reliably with smart rider matching and cooker self-delivery fallback.

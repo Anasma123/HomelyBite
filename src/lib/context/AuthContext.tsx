@@ -29,12 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/auth/me');
       const data = await res.json();
       if (data.success && data.users) {
-        // If no user stored yet, default to Customer Amina
-        const storedUserId = localStorage.getItem('hf_active_user_id');
-        let activeUser = data.users.find((u: User) => u.id === storedUserId);
-        if (!activeUser) {
-          activeUser = data.users.find((u: User) => u.role === 'CUSTOMER') || data.users[0];
-        }
+        const storedUserId = typeof window !== 'undefined' ? localStorage.getItem('hf_active_user_id') : null;
+        const activeUser = storedUserId ? data.users.find((u: User) => u.id === storedUserId) : null;
 
         if (activeUser) {
           setCurrentUser(activeUser);
@@ -51,6 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const foundRider = rData.riders?.find((r: DeliveryPersonProfile) => r.userId === activeUser.id);
             setCurrentRider(foundRider || null);
           }
+        } else {
+          setCurrentUser(null);
+          setCurrentCooker(null);
+          setCurrentRider(null);
+          setCurrentRole('CUSTOMER');
         }
       }
     } catch (err) {
