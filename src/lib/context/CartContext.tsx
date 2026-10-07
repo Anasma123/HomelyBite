@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem, DeliveryMode, Coupon } from '../types';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Product, CartItem, DeliveryMode, Coupon, PlatformSettings } from '../types';
+import { DEFAULT_PLATFORM_SETTINGS } from '../initial-data';
 
 interface CartContextType {
   items: CartItem[];
@@ -22,6 +23,8 @@ interface CartContextType {
   finalTotal: number;
   deliveryFee: number;
   platformFee: number;
+  platformSettings: PlatformSettings;
+  refreshSettings: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -33,6 +36,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('PLATFORM_DELIVERY');
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [platformSettings, setPlatformSettings] = useState<PlatformSettings>(DEFAULT_PLATFORM_SETTINGS);
+
+  const refreshSettings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings', { cache: 'no-store' });
+      const data = await res.json();
+      if (data.success && data.settings) {
+        setPlatformSettings(data.settings);
+      }
+    } catch {
+      // Fallback cleanly to default platform settings
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshSettings();
+    const handleSettingsUpdate = () => refreshSettings();
+    window.addEventListener('platform-settings-updated', handleSettingsUpdate);
+    window.addEventListener('focus', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('platform-settings-updated', handleSettingsUpdate);
+      window.removeEventListener('focus', handleSettingsUpdate);
+    };
+  }, [refreshSettings]);
 
   // Load from local storage
   useEffect(() => {
@@ -122,9 +149,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Delivery fee baseline
-  const deliveryFee = deliveryMode === 'CUSTOMER_PICKUP' ? 0 : 30;
-  const platformFee = items.length > 0 ? 5 : 0;
+  // Delivery fee baseline & dynamic platform tech fee
+  const baseDeliveryFee = Number(platformSettings.baseDeliveryFee ?? 30);
+  const deliveryFee = items.length > 0 ? (deliveryMode === 'CUSTOMER_PICKUP' ? 0 : baseDeliveryFee) : 0;
+  const platformFee = items.length > 0 ? Number(platformSettings.platformFee ?? 5) : 0;
 
   const applyCoupon = async (code: string) => {
     try {
@@ -174,6 +202,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         finalTotal,
         deliveryFee,
         platformFee,
+        platformSettings,
+        refreshSettings,
       }}
     >
       {children}

@@ -34,6 +34,7 @@ export default function CheckoutPage() {
     deliveryMode,
     setDeliveryMode,
     platformFee,
+    deliveryFee: cartDeliveryFee,
     appliedCoupon,
     discountAmount,
     clearCart,
@@ -90,7 +91,7 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   // 100% Synchronous, mathematically consistent fee calculations
-  const deliveryFee = deliveryMode === 'CUSTOMER_PICKUP' ? 0 : 30;
+  const deliveryFee = deliveryMode === 'CUSTOMER_PICKUP' ? 0 : cartDeliveryFee;
   const totalPayable = Math.max(0, subtotal + deliveryFee + platformFee - discountAmount);
 
   if (items.length === 0) {

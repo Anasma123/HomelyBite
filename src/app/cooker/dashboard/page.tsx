@@ -128,6 +128,7 @@ export default function CookerDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [masterIngredients, setMasterIngredients] = useState<MasterIngredient[]>([]);
+  const [platformSettings, setPlatformSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   // New Product Form State
@@ -180,20 +181,22 @@ export default function CookerDashboard() {
       }
       if (!cookerId) cookerId = 'cook-prof-1';
 
-      const [ordersRes, prodsRes, catsRes, ingsRes, reqsRes] = await Promise.all([
+      const [ordersRes, prodsRes, catsRes, ingsRes, reqsRes, settingsRes] = await Promise.all([
         fetch(`/api/orders?cookerId=${cookerId}`, { cache: 'no-store' }),
         fetch(`/api/products?cookerId=${cookerId}`, { cache: 'no-store' }),
         fetch('/api/categories', { cache: 'no-store' }),
         fetch('/api/ingredients', { cache: 'no-store' }),
         fetch(`/api/custom-requests?cookerId=${cookerId}`, { cache: 'no-store' }),
+        fetch('/api/settings', { cache: 'no-store' }),
       ]);
 
-      const [ordersData, prodsData, catsData, ingsData, reqsData] = await Promise.all([
+      const [ordersData, prodsData, catsData, ingsData, reqsData, settingsData] = await Promise.all([
         ordersRes.json(),
         prodsRes.json(),
         catsRes.json(),
         ingsRes.json(),
         reqsRes.json(),
+        settingsRes.json(),
       ]);
 
       if (ordersData.success) setOrders(ordersData.orders || []);
@@ -206,6 +209,7 @@ export default function CookerDashboard() {
         }
       }
       if (ingsData.success) setMasterIngredients(ingsData.ingredients || []);
+      if (settingsData.success) setPlatformSettings(settingsData.settings);
     } catch (err) {
       console.error('Failed to load cooker dashboard data:', err);
     } finally {
@@ -1898,7 +1902,7 @@ export default function CookerDashboard() {
               <span className="text-2xl font-black text-gray-900">₹{totalGrossSales}</span>
             </div>
             <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
-              <span className="text-xs text-amber-700 block font-medium">Platform Fee (10%)</span>
+              <span className="text-xs text-amber-700 block font-medium">Platform Fee ({platformSettings?.commissionRatePercent ?? 10}%)</span>
               <span className="text-2xl font-black text-amber-700">₹{totalPlatformCommission}</span>
             </div>
             <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">

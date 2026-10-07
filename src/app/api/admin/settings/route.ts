@@ -18,9 +18,79 @@ export async function POST(request: Request) {
   try {
     await db.sync();
     const body = await request.json();
-    const { updates, adminEmail = 'admin@homefood.local' } = body;
+    const updates = body.updates || body;
+    const adminEmail = body.adminEmail || 'admin@homelybite.com';
 
-    const newSettings = db.updateSettings(updates);
+    if (!updates || typeof updates !== 'object') {
+      return NextResponse.json(
+        { success: false, message: 'Invalid settings updates payload' },
+        { status: 400 }
+      );
+    }
+
+    const sanitizedUpdates: Record<string, number> = {};
+
+    if (updates.commissionRatePercent !== undefined) {
+      const val = Number(updates.commissionRatePercent);
+      if (!isNaN(val)) sanitizedUpdates.commissionRatePercent = Math.max(0, Math.min(100, Math.round(val * 100) / 100));
+    }
+
+    if (updates.baseDeliveryFee !== undefined) {
+      const val = Number(updates.baseDeliveryFee);
+      if (!isNaN(val)) sanitizedUpdates.baseDeliveryFee = Math.max(0, Math.round(val));
+    }
+
+    if (updates.deliveryFeePerKm !== undefined) {
+      const val = Number(updates.deliveryFeePerKm);
+      if (!isNaN(val)) sanitizedUpdates.deliveryFeePerKm = Math.max(0, Math.round(val));
+    }
+
+    if (updates.platformFee !== undefined) {
+      const val = Number(updates.platformFee);
+      if (!isNaN(val)) sanitizedUpdates.platformFee = Math.max(0, Math.round(val));
+    }
+
+    if (updates.relevanceWeight !== undefined) {
+      const val = Number(updates.relevanceWeight);
+      if (!isNaN(val)) sanitizedUpdates.relevanceWeight = Math.max(0, Math.min(100, val));
+    }
+
+    if (updates.distanceWeight !== undefined) {
+      const val = Number(updates.distanceWeight);
+      if (!isNaN(val)) sanitizedUpdates.distanceWeight = Math.max(0, Math.min(100, val));
+    }
+
+    if (updates.ratingWeight !== undefined) {
+      const val = Number(updates.ratingWeight);
+      if (!isNaN(val)) sanitizedUpdates.ratingWeight = Math.max(0, Math.min(100, val));
+    }
+
+    if (updates.availabilityWeight !== undefined) {
+      const val = Number(updates.availabilityWeight);
+      if (!isNaN(val)) sanitizedUpdates.availabilityWeight = Math.max(0, Math.min(100, val));
+    }
+
+    if (updates.popularityWeight !== undefined) {
+      const val = Number(updates.popularityWeight);
+      if (!isNaN(val)) sanitizedUpdates.popularityWeight = Math.max(0, Math.min(100, val));
+    }
+
+    if (updates.cookerQualityWeight !== undefined) {
+      const val = Number(updates.cookerQualityWeight);
+      if (!isNaN(val)) sanitizedUpdates.cookerQualityWeight = Math.max(0, Math.min(100, val));
+    }
+
+    if (updates.otpExpiryMinutes !== undefined) {
+      const val = Number(updates.otpExpiryMinutes);
+      if (!isNaN(val)) sanitizedUpdates.otpExpiryMinutes = Math.max(1, Math.min(60, Math.round(val)));
+    }
+
+    if (updates.otpCooldownSeconds !== undefined) {
+      const val = Number(updates.otpCooldownSeconds);
+      if (!isNaN(val)) sanitizedUpdates.otpCooldownSeconds = Math.max(5, Math.min(300, Math.round(val)));
+    }
+
+    const newSettings = db.updateSettings(sanitizedUpdates);
 
     db.addAuditLog({
       id: `log-${Date.now()}`,
@@ -30,14 +100,19 @@ export async function POST(request: Request) {
       actorRole: 'ADMIN',
       targetType: 'SETTING',
       targetId: 'global',
-      details: `Platform settings updated: ${JSON.stringify(updates)}`,
+      details: `Platform settings updated: ${JSON.stringify(sanitizedUpdates)}`,
       timestamp: new Date().toISOString(),
     });
 
     await db.flush();
 
-    return NextResponse.json({ success: true, settings: newSettings });
+    return NextResponse.json({
+      success: true,
+      settings: newSettings,
+      message: 'Platform parameters and commission rules updated successfully.',
+    });
   } catch (error) {
+    console.error('Failed to update platform settings:', error);
     return NextResponse.json({ success: false, message: 'Failed to update platform settings' }, { status: 500 });
   }
 }

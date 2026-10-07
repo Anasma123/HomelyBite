@@ -28,7 +28,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/context/AuthContext';
-import { CookerProfile, Product, DeliveryPersonProfile, Category, MasterIngredient, AuditLog } from '@/lib/types';
+import { CookerProfile, Product, DeliveryPersonProfile, Category, MasterIngredient, AuditLog, PlatformSettings } from '@/lib/types';
+import { DEFAULT_PLATFORM_SETTINGS } from '@/lib/initial-data';
 
 export default function AdminDashboard() {
   const { currentUser, currentRole, isLoading: authLoading } = useAuth();
@@ -44,6 +45,9 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [ingredients, setIngredients] = useState<MasterIngredient[]>([]);
   const [settings, setSettings] = useState<any>(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsFeedback, setSettingsFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [simOrderAmount, setSimOrderAmount] = useState<number>(500);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -350,18 +354,41 @@ export default function AdminDashboard() {
 
   const handleSaveSettings = async () => {
     if (!settings) return;
+    setIsSavingSettings(true);
+    setSettingsFeedback(null);
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ updates: settings }),
+        body: JSON.stringify({
+          updates: settings,
+          adminEmail: currentUser?.email || 'admin@homelybite.com',
+        }),
       });
       const data = await res.json();
-      if (data.success) {
-        alert('Platform settings & commission updated successfully!');
+      if (data.success && data.settings) {
+        setSettings(data.settings);
+        setSettingsFeedback({
+          type: 'success',
+          message: 'Platform parameters & commission rules updated and synchronized across all services!',
+        });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('platform-settings-updated'));
+        }
+        await loadAdminData();
+      } else {
+        setSettingsFeedback({
+          type: 'error',
+          message: data.message || 'Failed to update platform settings',
+        });
       }
     } catch {
-      alert('Failed to save settings');
+      setSettingsFeedback({
+        type: 'error',
+        message: 'Network error saving platform settings',
+      });
+    } finally {
+      setIsSavingSettings(false);
     }
   };
 
@@ -1271,51 +1298,507 @@ export default function AdminDashboard() {
       )}
 
       {/* Tab 7: Settings & Commission Rules */}
-      {activeTab === 'SETTINGS' && settings && (
-        <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-6 max-w-2xl">
-          <h2 className="text-lg font-bold text-gray-900">Platform Settings & Commission Rates</h2>
-
-          <div className="space-y-4 text-xs">
-            <div>
-              <label className="font-semibold text-gray-700 block mb-1">Platform Commission Rate (%)</label>
-              <input
-                type="number"
-                value={settings.commissionRatePercent}
-                onChange={(e) => setSettings({ ...settings, commissionRatePercent: Number(e.target.value) })}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+      {activeTab === 'SETTINGS' && (
+        <div className="space-y-6 max-w-4xl">
+          {/* Header & Status Card */}
+          <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Base Delivery Fee (₹)</label>
-                <input
-                  type="number"
-                  value={settings.baseDeliveryFee}
-                  onChange={(e) => setSettings({ ...settings, baseDeliveryFee: Number(e.target.value) })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900"
-                />
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-semibold mb-2">
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  Live Platform Engine
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Platform Settings & Commission Rates</h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Configure live platform fees, kitchen payout commission %, doorstep delivery economics, AI ranking weights, and OTP rules.
+                </p>
               </div>
 
-              <div>
-                <label className="font-semibold text-gray-700 block mb-1">Platform Tech Fee (₹)</label>
-                <input
-                  type="number"
-                  value={settings.platformFee}
-                  onChange={(e) => setSettings({ ...settings, platformFee: Number(e.target.value) })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900"
-                />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...DEFAULT_PLATFORM_SETTINGS })}
+                  className="px-4 py-2 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  Defaults
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSettings}
+                  disabled={isSavingSettings || !settings}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl text-xs transition-colors shadow-xs flex items-center gap-2"
+                >
+                  {isSavingSettings ? (
+                    <>
+                      <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                      Saving & Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Save & Sync Rules
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSaveSettings}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl transition-colors shadow-xs"
-            >
-              Update Platform Parameters
-            </button>
+            {/* Inline feedback banner */}
+            {settingsFeedback && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-medium flex items-center justify-between gap-2 ${
+                  settingsFeedback.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {settingsFeedback.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{settingsFeedback.message}</span>
+                </div>
+                <button
+                  onClick={() => setSettingsFeedback(null)}
+                  className="text-gray-400 hover:text-gray-700 text-xs px-2 py-0.5"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
+
+          {!settings ? (
+            <div className="bg-white rounded-3xl border border-gray-200 p-8 text-center text-xs text-gray-500">
+              Loading platform rules...
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Section 1 & 2: Financial Rules & Logistics Rules */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Commercial Revenue & Commission */}
+                <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+                    <DollarSign className="w-4 h-4 text-amber-600" />
+                    <h3 className="font-bold text-gray-900 text-sm">Commercial Revenue & Commission</h3>
+                  </div>
+
+                  <div className="space-y-4 text-xs">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="font-semibold text-gray-700">Platform Commission Rate</label>
+                        <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+                          {settings.commissionRatePercent}%
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.5"
+                          value={settings.commissionRatePercent ?? ''}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              commissionRatePercent: e.target.value === '' ? 0 : Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pr-8 text-gray-900 focus:bg-white focus:border-indigo-500 font-semibold"
+                        />
+                        <span className="absolute right-3 top-2.5 text-gray-400 font-bold">%</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Deducted from home cookers on total food subtotal of each delivered order.
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="font-semibold text-gray-700">Customer Platform Tech Fee</label>
+                        <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                          ₹{settings.platformFee}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={settings.platformFee ?? ''}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              platformFee: e.target.value === '' ? 0 : Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pr-8 text-gray-900 focus:bg-white focus:border-indigo-500 font-semibold"
+                        />
+                        <span className="absolute right-3 top-2.5 text-gray-400 font-bold">₹</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Convenience & platform maintenance charge added to customer cart checkout.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logistics & Delivery Rates */}
+                <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+                    <Bike className="w-4 h-4 text-emerald-600" />
+                    <h3 className="font-bold text-gray-900 text-sm">Doorstep Delivery Logistics Rates</h3>
+                  </div>
+
+                  <div className="space-y-4 text-xs">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="font-semibold text-gray-700">Base Doorstep Delivery Fee</label>
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                          ₹{settings.baseDeliveryFee}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={settings.baseDeliveryFee ?? ''}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              baseDeliveryFee: e.target.value === '' ? 0 : Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pr-8 text-gray-900 focus:bg-white focus:border-indigo-500 font-semibold"
+                        />
+                        <span className="absolute right-3 top-2.5 text-gray-400 font-bold">₹</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Baseline charge for orders within the first 5 km delivery radius.
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="font-semibold text-gray-700">Distance Surcharge Rate (Per Km)</label>
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                          ₹{settings.deliveryFeePerKm}/km
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={settings.deliveryFeePerKm ?? ''}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              deliveryFeePerKm: e.target.value === '' ? 0 : Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 pr-14 text-gray-900 focus:bg-white focus:border-indigo-500 font-semibold"
+                        />
+                        <span className="absolute right-3 top-2.5 text-gray-400 font-bold">₹/km</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Additional charge per kilometer beyond initial 5 km (direct customer pickup stays ₹0).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Live Order Economics Simulator */}
+              <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-300">Interactive Model</span>
+                    <h3 className="text-lg font-black text-white mt-0.5">Live Order Economics & Payout Simulator</h3>
+                    <p className="text-xs text-indigo-200">
+                      See exactly how order amounts are divided between cooker, platform, and logistics with your current parameters.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/10">
+                    <span className="text-xs text-indigo-200">Test Order:</span>
+                    <input
+                      type="number"
+                      min="50"
+                      step="50"
+                      value={simOrderAmount}
+                      onChange={(e) => setSimOrderAmount(Math.max(1, Number(e.target.value)))}
+                      className="w-20 bg-white/20 text-white font-black text-sm px-2 py-1 rounded-xl border border-white/20 focus:outline-hidden"
+                    />
+                    <span className="text-xs text-indigo-200 font-bold">₹</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+                  {/* Customer Payment */}
+                  <div className="bg-white/10 rounded-2xl p-4 border border-white/10 space-y-2">
+                    <span className="text-indigo-200 font-medium block text-[11px]">Customer Checkout Total</span>
+                    <span className="text-2xl font-black text-white block">
+                      ₹{simOrderAmount + Number(settings.baseDeliveryFee || 0) + Number(settings.platformFee || 0)}
+                    </span>
+                    <div className="text-[10px] text-indigo-300 space-y-0.5 pt-1 border-t border-white/10">
+                      <div>Food: ₹{simOrderAmount}</div>
+                      <div>Delivery: ₹{settings.baseDeliveryFee}</div>
+                      <div>Platform Fee: ₹{settings.platformFee}</div>
+                    </div>
+                  </div>
+
+                  {/* Cooker Payout */}
+                  <div className="bg-emerald-500/20 rounded-2xl p-4 border border-emerald-500/30 space-y-2">
+                    <span className="text-emerald-300 font-medium block text-[11px]">Cooker Payout (Net)</span>
+                    <span className="text-2xl font-black text-emerald-400 block">
+                      ₹{simOrderAmount - Math.round((simOrderAmount * Number(settings.commissionRatePercent || 0)) / 100)}
+                    </span>
+                    <div className="text-[10px] text-emerald-200 space-y-0.5 pt-1 border-t border-emerald-500/20">
+                      <div>Gross: ₹{simOrderAmount}</div>
+                      <div>Minus {settings.commissionRatePercent}% cut</div>
+                      <div className="text-emerald-300 font-bold">Transferred to Cooker</div>
+                    </div>
+                  </div>
+
+                  {/* Platform Commission */}
+                  <div className="bg-amber-500/20 rounded-2xl p-4 border border-amber-500/30 space-y-2">
+                    <span className="text-amber-300 font-medium block text-[11px]">Platform Commission Cut</span>
+                    <span className="text-2xl font-black text-amber-400 block">
+                      ₹{Math.round((simOrderAmount * Number(settings.commissionRatePercent || 0)) / 100)}
+                    </span>
+                    <div className="text-[10px] text-amber-200 space-y-0.5 pt-1 border-t border-amber-500/20">
+                      <div>Rate: {settings.commissionRatePercent}%</div>
+                      <div>On ₹{simOrderAmount} subtotal</div>
+                      <div className="text-amber-300 font-bold">Kitchen service share</div>
+                    </div>
+                  </div>
+
+                  {/* Total Platform Revenue */}
+                  <div className="bg-indigo-500/20 rounded-2xl p-4 border border-indigo-500/30 space-y-2">
+                    <span className="text-indigo-300 font-medium block text-[11px]">Total Platform Net Revenue</span>
+                    <span className="text-2xl font-black text-indigo-300 block">
+                      ₹{Math.round((simOrderAmount * Number(settings.commissionRatePercent || 0)) / 100) + Number(settings.platformFee || 0)}
+                    </span>
+                    <div className="text-[10px] text-indigo-200 space-y-0.5 pt-1 border-t border-indigo-500/20">
+                      <div>Commission: ₹{Math.round((simOrderAmount * Number(settings.commissionRatePercent || 0)) / 100)}</div>
+                      <div>Tech Fee: +₹{settings.platformFee}</div>
+                      <div className="text-indigo-300 font-bold">Company Earnings</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4 & 5: AI Search Weights & OTP Security */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* AI Search & Recommendation Weights */}
+                <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal className="w-4 h-4 text-purple-600" />
+                      <h3 className="font-bold text-gray-900 text-sm">AI Search & Ranking Weights</h3>
+                    </div>
+                    <span className="text-[11px] text-gray-400 font-medium">Relative scoring signals</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">Text Relevance</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={settings.relevanceWeight ?? 40}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            relevanceWeight: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">Distance Proximity</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={settings.distanceWeight ?? 20}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            distanceWeight: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">Customer Rating</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={settings.ratingWeight ?? 15}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            ratingWeight: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">Kitchen Availability</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={settings.availabilityWeight ?? 10}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            availabilityWeight: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">Dish Popularity</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={settings.popularityWeight ?? 10}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            popularityWeight: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">Cooker Quality</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={settings.cookerQualityWeight ?? 5}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            cookerQualityWeight: Number(e.target.value),
+                          })
+                        }
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Authentication & Security Rules */}
+                <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-blue-600" />
+                      <h3 className="font-bold text-gray-900 text-sm">Authentication & Security Rules</h3>
+                    </div>
+                    <span className="text-[11px] text-gray-400 font-medium">OTP Verification</span>
+                  </div>
+
+                  <div className="space-y-4 text-xs">
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">OTP Expiry Window (Minutes)</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="1"
+                          max="60"
+                          value={settings.otpExpiryMinutes ?? 5}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              otpExpiryMinutes: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                        />
+                        <span className="absolute right-3 top-2.5 text-gray-400 font-medium">mins</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        How long a one-time login / registration password remains valid before expiring.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 block mb-1">OTP Resend Cooldown (Seconds)</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="5"
+                          max="300"
+                          value={settings.otpCooldownSeconds ?? 60}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              otpCooldownSeconds: Number(e.target.value),
+                            })
+                          }
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-gray-900 font-semibold"
+                        />
+                        <span className="absolute right-3 top-2.5 text-gray-400 font-medium">sec</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Minimum cooldown delay between consecutive OTP resend requests.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Quick Action Bar */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSettings({ ...DEFAULT_PLATFORM_SETTINGS })}
+                  className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-semibold transition-colors"
+                >
+                  Reset Defaults
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSettings}
+                  disabled={isSavingSettings || !settings}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold px-7 py-2.5 rounded-xl text-xs transition-colors shadow-xs flex items-center gap-2"
+                >
+                  {isSavingSettings ? (
+                    <>
+                      <RotateCw className="w-4 h-4 animate-spin" />
+                      Saving Parameters...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      Save & Sync Platform Rules
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

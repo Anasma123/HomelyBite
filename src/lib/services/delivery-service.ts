@@ -31,11 +31,17 @@ export class DeliveryService {
   /**
    * Calculates distance-based delivery fee in INR
    */
-  public static calculateDeliveryFee(distanceKm: number, mode: DeliveryMode): number {
+  public static calculateDeliveryFee(
+    distanceKm: number,
+    mode: DeliveryMode,
+    baseFee: number = 30,
+    feePerKm: number = 10
+  ): number {
     if (mode === 'CUSTOMER_PICKUP') return 0;
-    if (distanceKm <= 5) return 30;
-    if (distanceKm <= 10) return 50;
-    return Math.round(50 + (distanceKm - 10) * 10);
+    const safeBaseFee = Math.max(0, Number(baseFee));
+    const safeFeePerKm = Math.max(0, Number(feePerKm));
+    if (distanceKm <= 5) return safeBaseFee;
+    return Math.round(safeBaseFee + (distanceKm - 5) * safeFeePerKm);
   }
 
   /**

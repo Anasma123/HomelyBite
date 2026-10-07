@@ -119,13 +119,20 @@ export async function POST(request: Request) {
         );
       }
 
+      const settings = db.getSettings();
+      const baseFee = Number(settings.baseDeliveryFee ?? 30);
+      const feePerKm = Number(settings.deliveryFeePerKm ?? 10);
+
       serverDeliveryFee = DeliveryService.calculateDeliveryFee(
         eligibility.distanceKm,
-        deliveryMode as DeliveryMode
+        deliveryMode as DeliveryMode,
+        baseFee,
+        feePerKm
       );
     }
 
-    const platformFee = db.getSettings().platformFee || 5;
+    const currentSettings = db.getSettings();
+    const platformFee = Number(currentSettings.platformFee ?? 5);
 
     // 3. Server-side coupon verification
     let discountAmount = 0;
@@ -148,7 +155,7 @@ export async function POST(request: Request) {
     const totalAmount = Math.max(0, serverSubtotal + serverDeliveryFee + platformFee - discountAmount);
 
     // 4. Server-side platform commission & cooker earnings calculation
-    const commissionPercent = db.getSettings().commissionRatePercent || 10;
+    const commissionPercent = Number(currentSettings.commissionRatePercent ?? 10);
     const platformCommission = Math.round((serverSubtotal * commissionPercent) / 100);
     const netCookerEarnings = serverSubtotal - platformCommission;
 
