@@ -25,6 +25,32 @@
       "avatarUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=200&auto=format&fit=crop&q=80",
       "createdAt": "2026-10-07T12:00:00.000Z",
       "updatedAt": "2026-10-07T12:00:00.000Z"
+    },
+    {
+      "id": "usr-1791400705330",
+      "name": "Shameema Kitchen",
+      "email": "testcook_1791400704396@homelybite.com",
+      "phone": "+91 9447123456",
+      "role": "COOKER",
+      "isVerified": true,
+      "status": "ACTIVE",
+      "isFrozen": false,
+      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=Shameema%20Kitchen&backgroundColor=ea580c",
+      "createdAt": "2026-10-07T19:18:25.330Z",
+      "updatedAt": "2026-10-07T19:18:25.330Z"
+    },
+    {
+      "id": "usr-1791400715355",
+      "name": "Chef Rehana",
+      "email": "chef_1791400715259@homelybite.com",
+      "phone": "+91 9847112233",
+      "role": "COOKER",
+      "isVerified": true,
+      "status": "ACTIVE",
+      "isFrozen": false,
+      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=Chef%20Rehana&backgroundColor=ea580c",
+      "createdAt": "2026-10-07T19:18:35.355Z",
+      "updatedAt": "2026-10-07T19:18:35.355Z"
     }
   ],
   "cookers": [
@@ -53,6 +79,58 @@
       "maxDailyCapacity": 20,
       "isOpenToday": true,
       "openingHours": "09:00 AM - 09:00 PM"
+    },
+    {
+      "id": "cook-1791400705331",
+      "userId": "usr-1791400705330",
+      "storeName": "Shameema Special Bakes",
+      "bio": "Freshly made homemade food prepared with love and wholesome ingredients.",
+      "logoUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80",
+      "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
+      "status": "APPROVED",
+      "rating": 5,
+      "totalReviews": 0,
+      "totalOrders": 0,
+      "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
+      "address": "Kochi, Kerala",
+      "latitude": 9.9675,
+      "longitude": 76.2995,
+      "platformDeliveryEnabled": true,
+      "selfDeliveryEnabled": true,
+      "customerPickupEnabled": true,
+      "selfDeliveryRadiusKm": 5,
+      "platformDeliveryRadiusKm": 10,
+      "minimumOrderValue": 200,
+      "averagePrepTimeMinutes": 45,
+      "maxDailyCapacity": 15,
+      "isOpenToday": true,
+      "openingHours": "10:00 AM - 08:00 PM"
+    },
+    {
+      "id": "cook-1791400715356",
+      "userId": "usr-1791400715355",
+      "storeName": "Rehana Flavors",
+      "bio": "Freshly made homemade food prepared with love and wholesome ingredients.",
+      "logoUrl": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80",
+      "coverImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80",
+      "status": "APPROVED",
+      "rating": 5,
+      "totalReviews": 0,
+      "totalOrders": 0,
+      "fssaiLicenseNumber": "FSSAI-KL-2026-TEST",
+      "address": "Kochi, Kerala",
+      "latitude": 9.9675,
+      "longitude": 76.2995,
+      "platformDeliveryEnabled": true,
+      "selfDeliveryEnabled": true,
+      "customerPickupEnabled": true,
+      "selfDeliveryRadiusKm": 5,
+      "platformDeliveryRadiusKm": 10,
+      "minimumOrderValue": 200,
+      "averagePrepTimeMinutes": 45,
+      "maxDailyCapacity": 15,
+      "isOpenToday": true,
+      "openingHours": "10:00 AM - 08:00 PM"
     }
   ],
   "riders": [],
@@ -894,7 +972,276 @@
       "allergens": []
     }
   ],
-  "products": [],
+  "products": [
+    {
+      "id": "prod-1791400715392",
+      "cookerId": "cook-1791400715356",
+      "name": "Kozhikodan Dum Biryani",
+      "slug": "kozhikodan-dum-biryani-5392",
+      "description": "Fragrant jeerakasala rice dum cooked with tender chicken and aromatic ghee.",
+      "categoryId": "cat-2",
+      "tagIds": [
+        "tag-12",
+        "tag-10",
+        "tag-1",
+        "tag-2"
+      ],
+      "price": 240,
+      "imageUrls": [
+        "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&auto=format&fit=crop&q=80"
+      ],
+      "netWeightGrams": null,
+      "servingSizeGrams": null,
+      "servingsCount": 1,
+      "prepTimeMinutes": 45,
+      "maxWaitLimitMinutes": 60,
+      "isAvailable": true,
+      "stockCount": 10,
+      "dailyCapacity": 15,
+      "bookedToday": 0,
+      "supportsPreorder": true,
+      "status": "APPROVED",
+      "ingredients": [
+        {
+          "name": "Chicken Breast",
+          "quantityGrams": 200
+        },
+        {
+          "name": "Kaima Rice",
+          "quantityGrams": 150
+        }
+      ],
+      "detectedAllergens": [],
+      "nutrition": {
+        "total": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null,
+          "saturatedFat": null,
+          "sugar": null,
+          "fiber": null,
+          "sodium": null
+        },
+        "per100g": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null,
+          "saturatedFat": null,
+          "sugar": null,
+          "fiber": null,
+          "sodium": null
+        },
+        "perServing": {
+          "calories": null,
+          "protein": null,
+          "carbs": null,
+          "fat": null,
+          "saturatedFat": null,
+          "sugar": null,
+          "fiber": null,
+          "sodium": null
+        },
+        "servingWeightGrams": null,
+        "servingsPerPackage": 1,
+        "ingredientBreakdown": [
+          {
+            "inputName": "Chicken Breast",
+            "weightGrams": null,
+            "matchedMaster": {
+              "id": "ing-chicken-breast",
+              "name": "Chicken Breast (Boneless/Skinless)",
+              "standardUnit": "g",
+              "caloriesPer100": 165,
+              "proteinPer100": 31,
+              "carbsPer100": 0,
+              "fatPer100": 3.6,
+              "saturatedFatPer100": 1,
+              "sugarPer100": 0,
+              "fiberPer100": 0,
+              "sodiumPer100": 74,
+              "allergens": []
+            },
+            "confidence": 0.95,
+            "clarificationNeeded": false,
+            "suggestions": [
+              {
+                "id": "ing-chicken-breast",
+                "name": "Chicken Breast (Boneless/Skinless)",
+                "standardUnit": "g",
+                "caloriesPer100": 165,
+                "proteinPer100": 31,
+                "carbsPer100": 0,
+                "fatPer100": 3.6,
+                "saturatedFatPer100": 1,
+                "sugarPer100": 0,
+                "fiberPer100": 0,
+                "sodiumPer100": 74,
+                "allergens": []
+              },
+              {
+                "id": "ing-1",
+                "name": "All-Purpose Flour (Maida)",
+                "standardUnit": "g",
+                "caloriesPer100": 364,
+                "proteinPer100": 10.3,
+                "carbsPer100": 76.3,
+                "fatPer100": 1,
+                "saturatedFatPer100": 0.2,
+                "sugarPer100": 0.3,
+                "fiberPer100": 2.7,
+                "sodiumPer100": 2,
+                "allergens": [
+                  "Gluten",
+                  "Wheat"
+                ]
+              },
+              {
+                "id": "ing-2",
+                "name": "Whole Wheat Flour (Atta)",
+                "standardUnit": "g",
+                "caloriesPer100": 340,
+                "proteinPer100": 13.2,
+                "carbsPer100": 72,
+                "fatPer100": 2.5,
+                "saturatedFatPer100": 0.4,
+                "sugarPer100": 0.4,
+                "fiberPer100": 10.7,
+                "sodiumPer100": 5,
+                "allergens": [
+                  "Gluten",
+                  "Wheat"
+                ]
+              },
+              {
+                "id": "ing-3",
+                "name": "Granulated Cane Sugar",
+                "standardUnit": "g",
+                "caloriesPer100": 387,
+                "proteinPer100": 0,
+                "carbsPer100": 100,
+                "fatPer100": 0,
+                "saturatedFatPer100": 0,
+                "sugarPer100": 99.8,
+                "fiberPer100": 0,
+                "sodiumPer100": 1,
+                "allergens": []
+              }
+            ],
+            "calories": null,
+            "protein": null,
+            "carbs": null,
+            "fat": null
+          },
+          {
+            "inputName": "Kaima Rice",
+            "weightGrams": null,
+            "matchedMaster": {
+              "id": "ing-15",
+              "name": "Basmati Rice",
+              "standardUnit": "g",
+              "caloriesPer100": 356,
+              "proteinPer100": 7.1,
+              "carbsPer100": 78,
+              "fatPer100": 0.9,
+              "saturatedFatPer100": 0.2,
+              "sugarPer100": 0.1,
+              "fiberPer100": 1.3,
+              "sodiumPer100": 2,
+              "allergens": []
+            },
+            "confidence": 0.95,
+            "clarificationNeeded": false,
+            "suggestions": [
+              {
+                "id": "ing-15",
+                "name": "Basmati Rice",
+                "standardUnit": "g",
+                "caloriesPer100": 356,
+                "proteinPer100": 7.1,
+                "carbsPer100": 78,
+                "fatPer100": 0.9,
+                "saturatedFatPer100": 0.2,
+                "sugarPer100": 0.1,
+                "fiberPer100": 1.3,
+                "sodiumPer100": 2,
+                "allergens": []
+              },
+              {
+                "id": "ing-1",
+                "name": "All-Purpose Flour (Maida)",
+                "standardUnit": "g",
+                "caloriesPer100": 364,
+                "proteinPer100": 10.3,
+                "carbsPer100": 76.3,
+                "fatPer100": 1,
+                "saturatedFatPer100": 0.2,
+                "sugarPer100": 0.3,
+                "fiberPer100": 2.7,
+                "sodiumPer100": 2,
+                "allergens": [
+                  "Gluten",
+                  "Wheat"
+                ]
+              },
+              {
+                "id": "ing-2",
+                "name": "Whole Wheat Flour (Atta)",
+                "standardUnit": "g",
+                "caloriesPer100": 340,
+                "proteinPer100": 13.2,
+                "carbsPer100": 72,
+                "fatPer100": 2.5,
+                "saturatedFatPer100": 0.4,
+                "sugarPer100": 0.4,
+                "fiberPer100": 10.7,
+                "sodiumPer100": 5,
+                "allergens": [
+                  "Gluten",
+                  "Wheat"
+                ]
+              },
+              {
+                "id": "ing-3",
+                "name": "Granulated Cane Sugar",
+                "standardUnit": "g",
+                "caloriesPer100": 387,
+                "proteinPer100": 0,
+                "carbsPer100": 100,
+                "fatPer100": 0,
+                "saturatedFatPer100": 0,
+                "sugarPer100": 99.8,
+                "fiberPer100": 0,
+                "sodiumPer100": 1,
+                "allergens": []
+              }
+            ],
+            "calories": null,
+            "protein": null,
+            "carbs": null,
+            "fat": null
+          }
+        ],
+        "unresolvedIngredients": []
+      },
+      "aiAnalysis": {
+        "summary": "Kozhikodan Dum Biryani delivers NaN kcal and NaNg protein per serving (NaNg). Its sugar profile is classified as moderate with moderate calorie density. Freshly made with 2 ingredients (2 verified in kitchen database).",
+        "healthGrade": "B",
+        "sugarLevel": "Moderate",
+        "calorieDensity": "Moderate",
+        "keyBenefits": [
+          "Prepared using honest homemade kitchen ingredients without chemical preservatives or artificial shelf stabilizers."
+        ],
+        "dietaryCautions": [],
+        "disclaimer": "Nutrition information is an estimate calculated directly from entered ingredients and verified database values. Not intended as medical advice."
+      },
+      "rating": 5,
+      "reviewCount": 0,
+      "createdAt": "2026-10-07T19:18:35.392Z",
+      "updatedAt": "2026-10-07T19:18:35.392Z"
+    }
+  ],
   "orders": [],
   "reviews": [],
   "coupons": [
@@ -941,6 +1288,39 @@
     "otpCooldownSeconds": 60
   },
   "auditLogs": [
+    {
+      "id": "log-1791400715393",
+      "action": "PRODUCT_CREATED",
+      "actorId": "usr-1791400715355",
+      "actorEmail": "Rehana Flavors",
+      "actorRole": "COOKER",
+      "targetType": "PRODUCT",
+      "targetId": "prod-1791400715392",
+      "details": "Product \"Kozhikodan Dum Biryani\" created with calculated nutrition and allergen tags.",
+      "timestamp": "2026-10-07T19:18:35.393Z"
+    },
+    {
+      "id": "log-1791400715357",
+      "action": "COOKER_REGISTERED_ACTIVE",
+      "actorId": "usr-1791400715355",
+      "actorEmail": "chef_1791400715259@homelybite.com",
+      "actorRole": "COOKER",
+      "targetType": "COOKER",
+      "targetId": "cook-1791400715356",
+      "details": "Cooker \"Rehana Flavors\" registered and verified for testing.",
+      "timestamp": "2026-10-07T19:18:35.357Z"
+    },
+    {
+      "id": "log-1791400705331",
+      "action": "COOKER_REGISTERED_ACTIVE",
+      "actorId": "usr-1791400705330",
+      "actorEmail": "testcook_1791400704396@homelybite.com",
+      "actorRole": "COOKER",
+      "targetType": "COOKER",
+      "targetId": "cook-1791400705331",
+      "details": "Cooker \"Shameema Special Bakes\" registered and verified for testing.",
+      "timestamp": "2026-10-07T19:18:25.331Z"
+    },
     {
       "id": "log-1",
       "action": "PLATFORM_INITIALIZED",

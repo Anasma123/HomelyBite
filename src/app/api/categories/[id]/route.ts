@@ -11,6 +11,7 @@ interface RouteContext {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
+    await db.sync();
     const { id } = await context.params;
     const deleted = db.deleteCategory(id);
     if (!deleted) {
@@ -19,6 +20,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         { status: 404 }
       );
     }
+    await db.flush();
 
     try {
       revalidatePath('/');
@@ -49,6 +51,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+    await db.sync();
     const { id } = await context.params;
     const body = await request.json();
     const updated = db.updateCategory(id, body);
@@ -58,6 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 404 }
       );
     }
+    await db.flush();
 
     try {
       revalidatePath('/');

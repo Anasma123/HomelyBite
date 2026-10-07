@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { useCart } from '@/lib/context/CartContext';
+import { useAuth } from '@/lib/context/AuthContext';
 import { RankedSearchResult } from '@/lib/services/search-service';
 import { RankedAISearchResult, AIInterpretation } from '@/lib/services/ai-search-service';
 import { GeneratedAIRecipe } from '@/lib/services/ai-recipe-service';
@@ -359,16 +360,24 @@ function RequestBakerModal({
   onClose: () => void;
   onSuccess: (req: CustomFoodRequest) => void;
 }) {
+  const { currentUser } = useAuth();
   const [servings, setServings] = useState(2);
-  const [customerName, setCustomerName] = useState('Anas Customer');
-  const [customerPhone, setCustomerPhone] = useState('+91 9846012345');
-  const [street, setStreet] = useState('Flat 4B, Emerald Heights, MG Road');
+  const [customerName, setCustomerName] = useState(currentUser?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '');
+  const [street, setStreet] = useState('');
   const [city, setCity] = useState('Kochi');
   const [pincode, setPincode] = useState('682016');
   const [specialNotes, setSpecialNotes] = useState('');
   const [selectedCooker, setSelectedCooker] = useState('cook-prof-1');
   const [submitting, setSubmitting] = useState(false);
   const [submittedReq, setSubmittedReq] = useState<CustomFoodRequest | null>(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.name) setCustomerName(currentUser.name);
+      if (currentUser.phone) setCustomerPhone(currentUser.phone);
+    }
+  }, [currentUser]);
 
   if (!isOpen || !recipe) return null;
 

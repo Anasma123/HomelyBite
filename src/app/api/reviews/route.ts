@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { Review } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   try {
+    await db.sync();
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
     const cookerId = searchParams.get('cookerId');
@@ -24,6 +28,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await db.sync();
     const body = await request.json();
     const {
       orderId,
@@ -101,6 +106,8 @@ export async function POST(request: Request) {
       rating: Math.round(avgCookerRating * 10) / 10,
       totalReviews: cookerReviews.length,
     });
+
+    await db.flush();
 
     return NextResponse.json({
       success: true,

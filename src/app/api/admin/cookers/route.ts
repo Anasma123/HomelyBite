@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { CookerApprovalStatus } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: Request) {
   try {
+    await db.sync();
     const body = await request.json();
     const { cookerId, status, adminEmail = 'admin@homefood.local' } = body;
 
@@ -30,6 +34,8 @@ export async function POST(request: Request) {
       details: `Admin changed status for "${cooker.storeName}" from ${previousStatus} to ${status}.`,
       timestamp: new Date().toISOString(),
     });
+
+    await db.flush();
 
     return NextResponse.json({
       success: true,

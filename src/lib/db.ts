@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { Pool } from 'pg';
 import {
   User,
   CookerProfile,
@@ -14,8 +15,6 @@ import {
   PlatformSettings,
   AuditLog,
   CustomerProfile,
-  OrderStatus,
-  DeliveryMode,
   CustomFoodRequest,
 } from './types';
 import {
@@ -30,7 +29,7 @@ import {
   DEFAULT_PLATFORM_SETTINGS,
 } from './initial-data';
 
-interface DatabaseState {
+export interface DatabaseState {
   users: User[];
   cookers: CookerProfile[];
   riders: DeliveryPersonProfile[];
@@ -47,42 +46,8 @@ interface DatabaseState {
   customRequests: CustomFoodRequest[];
 }
 
-// In-memory runtime state
-let state: DatabaseState | null = null;
-let lastLoadedMtime = 0;
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'marketplace-store.json');
-
-function ensureDirectoryExistence(filePath: string) {
-  const dirname = path.dirname(filePath);
-  if (fs.existsSync(dirname)) {
-    return true;
-  }
-  ensureDirectoryExistence(dirname);
-  fs.mkdirSync(dirname);
-}
-
-function loadState(): DatabaseState {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const stats = fs.statSync(DATA_FILE);
-      if (!state || stats.mtimeMs !== lastLoadedMtime) {
-        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-        state = JSON.parse(raw);
-        if (!state!.customRequests) state!.customRequests = [];
-        lastLoadedMtime = stats.mtimeMs;
-      }
-      return state!;
-    }
-  } catch (err) {
-    console.warn('Could not read existing database file, falling back to initial seed data:', err);
-  }
-
-  if (state) return state;
-
-  // Initial seed state
-  state = {
+function getInitialState(): DatabaseState {
+  return {
     users: [...INITIAL_USERS],
     cookers: [...INITIAL_COOKER_PROFILES],
     riders: [...INITIAL_RIDER_PROFILES],
@@ -110,27 +75,248 @@ function loadState(): DatabaseState {
     customerProfiles: [],
     customRequests: [],
   };
+}
 
-  saveState();
+// In-memory runtime state
+let state: DatabaseState | null = null;
+let lastLoadedMtime = 0;
+let lastPgSyncTime = 0;
+let isTableInitialized = false;
+
+// Dirty collections tracker for PostgreSQL upserts
+const dirtyCollections = new Set<keyof DatabaseState>();
+
+// Detect PostgreSQL connection string (Neon / Supabase / Vercel Postgres / Railway)
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.SUPABASE_DB_URL ||
+  '';
+
+let pgPool: Pool | null = null;
+
+function getPgPool(): Pool | null {
+  if (!DATABASE_URL || DATABASE_URL.trim() === '') return null;
+  if (!pgPool) {
+    const isLocal = DATABASE_URL.includes('localhost') || DATABASE_URL.includes('127.0.0.1');
+    pgPool = new Pool({
+      connectionString: DATABASE_URL,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+    pgPool.on('error', (err) => {
+      console.warn('PostgreSQL pool client warning:', err.message);
+    });
+  }
+  return pgPool;
+}
+
+function getLocalFilePath(): string {
+  // If running in AWS Lambda / Vercel serverless where /var/task is read-only
+  const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  if (isServerless) {
+    const tmpFile = path.join('/tmp', 'marketplace-store.json');
+    // Seed /tmp from bundled data if not present
+    const bundledFile = path.join(process.cwd(), 'data', 'marketplace-store.json');
+    if (!fs.existsSync(tmpFile) && fs.existsSync(bundledFile)) {
+      try {
+        fs.copyFileSync(bundledFile, tmpFile);
+      } catch {}
+    }
+    return tmpFile;
+  }
+  return path.join(process.cwd(), 'data', 'marketplace-store.json');
+}
+
+function ensureDirectoryExistence(filePath: string) {
+  const dirname = path.dirname(filePath);
+  if (fs.existsSync(dirname)) return true;
+  ensureDirectoryExistence(dirname);
+  try {
+    fs.mkdirSync(dirname, { recursive: true });
+  } catch {}
+}
+
+function loadLocalFileState(): DatabaseState {
+  const localFile = getLocalFilePath();
+  try {
+    if (fs.existsSync(localFile)) {
+      const stats = fs.statSync(localFile);
+      if (!state || stats.mtimeMs !== lastLoadedMtime) {
+        const raw = fs.readFileSync(localFile, 'utf-8');
+        state = JSON.parse(raw);
+        if (!state!.customRequests) state!.customRequests = [];
+        lastLoadedMtime = stats.mtimeMs;
+      }
+      return state!;
+    }
+  } catch (err) {
+    console.warn('Could not read local store file, falling back to seed data:', err);
+  }
+
+  if (state) return state;
+  state = getInitialState();
+  saveLocalFileState();
   return state!;
 }
 
-function saveState() {
+function saveLocalFileState() {
   if (!state) return;
+  const localFile = getLocalFilePath();
   try {
-    ensureDirectoryExistence(DATA_FILE);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
-    if (fs.existsSync(DATA_FILE)) {
-      lastLoadedMtime = fs.statSync(DATA_FILE).mtimeMs;
+    ensureDirectoryExistence(localFile);
+    fs.writeFileSync(localFile, JSON.stringify(state, null, 2), 'utf-8');
+    if (fs.existsSync(localFile)) {
+      lastLoadedMtime = fs.statSync(localFile).mtimeMs;
     }
   } catch (err) {
-    // In serverless read-only environments (like edge / some Vercel serverless without persistent disk)
-    // state continues in memory safely
-    console.warn('Note: Could not persist state to file system (operating in-memory):', err);
+    // In serverless environments, state continues safely
+    console.warn('Notice: Could not write to filesystem (operating in-memory):', err);
   }
 }
 
+async function ensureTableExists(pool: Pool) {
+  if (isTableInitialized) return;
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS marketplace_store (
+        collection VARCHAR(64) PRIMARY KEY,
+        data JSONB NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+    isTableInitialized = true;
+  } catch (err) {
+    console.error('Failed to create/verify marketplace_store table in PostgreSQL:', err);
+    throw err;
+  }
+}
+
+async function flushAllToPostgres(pool: Pool, targetState: DatabaseState) {
+  await ensureTableExists(pool);
+  const keys = Object.keys(targetState) as (keyof DatabaseState)[];
+  for (const key of keys) {
+    const val = targetState[key];
+    await pool.query(
+      `
+      INSERT INTO marketplace_store (collection, data, updated_at)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT (collection)
+      DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();
+      `,
+      [key, JSON.stringify(val)]
+    );
+  }
+}
+
+async function syncFromPostgres(): Promise<void> {
+  const pool = getPgPool();
+  if (!pool) return;
+
+  try {
+    await ensureTableExists(pool);
+    const res = await pool.query('SELECT collection, data FROM marketplace_store');
+
+    if (res.rows.length === 0) {
+      console.log('PostgreSQL table is empty. Auto-seeding initial marketplace data...');
+      const defaultState = getInitialState();
+      state = defaultState;
+      await flushAllToPostgres(pool, defaultState);
+      lastPgSyncTime = Date.now();
+      return;
+    }
+
+    const remoteCollections: Partial<DatabaseState> = {};
+    for (const row of res.rows) {
+      (remoteCollections as any)[row.collection] = row.data;
+    }
+
+    const baseState = state || getInitialState();
+    state = {
+      users: remoteCollections.users || baseState.users,
+      cookers: remoteCollections.cookers || baseState.cookers,
+      riders: remoteCollections.riders || baseState.riders,
+      categories: remoteCollections.categories || baseState.categories,
+      tags: remoteCollections.tags || baseState.tags,
+      masterIngredients: remoteCollections.masterIngredients || baseState.masterIngredients,
+      products: remoteCollections.products || baseState.products,
+      orders: remoteCollections.orders || baseState.orders,
+      reviews: remoteCollections.reviews || baseState.reviews,
+      coupons: remoteCollections.coupons || baseState.coupons,
+      settings: remoteCollections.settings || baseState.settings,
+      auditLogs: remoteCollections.auditLogs || baseState.auditLogs,
+      customerProfiles: remoteCollections.customerProfiles || baseState.customerProfiles,
+      customRequests: remoteCollections.customRequests || baseState.customRequests || [],
+    };
+    lastPgSyncTime = Date.now();
+  } catch (err) {
+    console.error('Error synchronizing from PostgreSQL:', err);
+  }
+}
+
+async function flushDirtyToPostgres(): Promise<void> {
+  const pool = getPgPool();
+  if (!pool || !state) return;
+  if (dirtyCollections.size === 0) return;
+
+  try {
+    await ensureTableExists(pool);
+    const collectionsToSave = Array.from(dirtyCollections);
+    for (const coll of collectionsToSave) {
+      const val = state[coll];
+      await pool.query(
+        `
+        INSERT INTO marketplace_store (collection, data, updated_at)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (collection)
+        DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();
+        `,
+        [coll, JSON.stringify(val)]
+      );
+      dirtyCollections.delete(coll);
+    }
+  } catch (err) {
+    console.error('Error flushing dirty collections to PostgreSQL:', err);
+  }
+}
+
+function markDirty(coll: keyof DatabaseState) {
+  dirtyCollections.add(coll);
+  saveLocalFileState();
+  // Asynchronously trigger flush to PostgreSQL
+  const pool = getPgPool();
+  if (pool) {
+    flushDirtyToPostgres().catch((err) => {
+      console.warn('Background PostgreSQL flush failed:', err.message);
+    });
+  }
+}
+
+function loadState(): DatabaseState {
+  if (state) return state;
+  return loadLocalFileState();
+}
+
 export const db = {
+  // Sync & Flush Lifecycle
+  sync: async (): Promise<void> => {
+    if (getPgPool()) {
+      await syncFromPostgres();
+    } else {
+      loadLocalFileState();
+    }
+  },
+
+  flush: async (): Promise<void> => {
+    saveLocalFileState();
+    if (getPgPool()) {
+      await flushDirtyToPostgres();
+    }
+  },
+
   // Users
   getUsers: () => loadState().users,
   getUserById: (id: string) => loadState().users.find((u) => u.id === id),
@@ -139,7 +325,7 @@ export const db = {
   createUser: (user: User) => {
     const s = loadState();
     s.users.push(user);
-    saveState();
+    markDirty('users');
     return user;
   },
   updateUser: (id: string, updates: Partial<User>) => {
@@ -147,7 +333,7 @@ export const db = {
     const idx = s.users.findIndex((u) => u.id === id);
     if (idx !== -1) {
       s.users[idx] = { ...s.users[idx], ...updates, updatedAt: new Date().toISOString() };
-      saveState();
+      markDirty('users');
       return s.users[idx];
     }
     return null;
@@ -164,7 +350,7 @@ export const db = {
         status: nextFrozen ? 'FROZEN' : 'ACTIVE',
         updatedAt: new Date().toISOString(),
       };
-      saveState();
+      markDirty('users');
       return s.users[idx];
     }
     return null;
@@ -173,17 +359,18 @@ export const db = {
     const s = loadState();
     const user = s.users.find((u) => u.id === id);
     if (!user) return false;
-    // Don't delete the platform admin
     if (user.role === 'ADMIN' && (user.email === 'silu@homelybite.com' || user.email === 'silu@homefood.local')) {
       return false;
     }
     s.users = s.users.filter((u) => u.id !== id);
+    markDirty('users');
     if (user.role === 'COOKER') {
       s.cookers = s.cookers.filter((c) => c.userId !== id);
+      markDirty('cookers');
     } else if (user.role === 'RIDER') {
       s.riders = s.riders.filter((r) => r.userId !== id);
+      markDirty('riders');
     }
-    saveState();
     return true;
   },
 
@@ -194,7 +381,7 @@ export const db = {
   createCooker: (cooker: CookerProfile) => {
     const s = loadState();
     s.cookers.push(cooker);
-    saveState();
+    markDirty('cookers');
     return cooker;
   },
   updateCooker: (id: string, updates: Partial<CookerProfile>) => {
@@ -202,7 +389,7 @@ export const db = {
     const idx = s.cookers.findIndex((c) => c.id === id);
     if (idx !== -1) {
       s.cookers[idx] = { ...s.cookers[idx], ...updates };
-      saveState();
+      markDirty('cookers');
       return s.cookers[idx];
     }
     return null;
@@ -215,7 +402,7 @@ export const db = {
   createRider: (rider: DeliveryPersonProfile) => {
     const s = loadState();
     s.riders.push(rider);
-    saveState();
+    markDirty('riders');
     return rider;
   },
   updateRider: (id: string, updates: Partial<DeliveryPersonProfile>) => {
@@ -223,7 +410,7 @@ export const db = {
     const idx = s.riders.findIndex((r) => r.id === id);
     if (idx !== -1) {
       s.riders[idx] = { ...s.riders[idx], ...updates };
-      saveState();
+      markDirty('riders');
       return s.riders[idx];
     }
     return null;
@@ -235,7 +422,7 @@ export const db = {
   createCategory: (cat: Category) => {
     const s = loadState();
     s.categories.push(cat);
-    saveState();
+    markDirty('categories');
     return cat;
   },
   updateCategory: (id: string, updates: Partial<Category>) => {
@@ -243,7 +430,7 @@ export const db = {
     const idx = s.categories.findIndex((c) => c.id === id);
     if (idx !== -1) {
       s.categories[idx] = { ...s.categories[idx], ...updates };
-      saveState();
+      markDirty('categories');
       return s.categories[idx];
     }
     return null;
@@ -253,7 +440,7 @@ export const db = {
     const countBefore = s.categories.length;
     s.categories = s.categories.filter((c) => c.id !== id);
     if (s.categories.length !== countBefore) {
-      saveState();
+      markDirty('categories');
       return true;
     }
     return false;
@@ -264,7 +451,7 @@ export const db = {
   createTag: (tag: Tag) => {
     const s = loadState();
     s.tags.push(tag);
-    saveState();
+    markDirty('tags');
     return tag;
   },
 
@@ -273,7 +460,7 @@ export const db = {
   createMasterIngredient: (ing: MasterIngredient) => {
     const s = loadState();
     s.masterIngredients.push(ing);
-    saveState();
+    markDirty('masterIngredients');
     return ing;
   },
   updateMasterIngredient: (id: string, updates: Partial<MasterIngredient>) => {
@@ -281,7 +468,7 @@ export const db = {
     const idx = s.masterIngredients.findIndex((m) => m.id === id);
     if (idx !== -1) {
       s.masterIngredients[idx] = { ...s.masterIngredients[idx], ...updates };
-      saveState();
+      markDirty('masterIngredients');
       return s.masterIngredients[idx];
     }
     return null;
@@ -296,7 +483,7 @@ export const db = {
   createProduct: (product: Product) => {
     const s = loadState();
     s.products.push(product);
-    saveState();
+    markDirty('products');
     return product;
   },
   updateProduct: (id: string, updates: Partial<Product>) => {
@@ -304,7 +491,7 @@ export const db = {
     const idx = s.products.findIndex((p) => p.id === id);
     if (idx !== -1) {
       s.products[idx] = { ...s.products[idx], ...updates, updatedAt: new Date().toISOString() };
-      saveState();
+      markDirty('products');
       return s.products[idx];
     }
     return null;
@@ -314,7 +501,7 @@ export const db = {
     const initialLen = s.products.length;
     s.products = s.products.filter((p) => p.id !== id);
     if (s.products.length !== initialLen) {
-      saveState();
+      markDirty('products');
       return true;
     }
     return false;
@@ -332,7 +519,7 @@ export const db = {
   createOrder: (order: Order) => {
     const s = loadState();
     s.orders.unshift(order);
-    saveState();
+    markDirty('orders');
     return order;
   },
   updateOrder: (id: string, updates: Partial<Order>) => {
@@ -340,7 +527,7 @@ export const db = {
     const idx = s.orders.findIndex((o) => o.id === id);
     if (idx !== -1) {
       s.orders[idx] = { ...s.orders[idx], ...updates, updatedAt: new Date().toISOString() };
-      saveState();
+      markDirty('orders');
       return s.orders[idx];
     }
     return null;
@@ -355,7 +542,7 @@ export const db = {
   createReview: (review: Review) => {
     const s = loadState();
     s.reviews.unshift(review);
-    saveState();
+    markDirty('reviews');
     return review;
   },
 
@@ -368,7 +555,7 @@ export const db = {
   createCoupon: (coupon: Coupon) => {
     const s = loadState();
     s.coupons.push(coupon);
-    saveState();
+    markDirty('coupons');
     return coupon;
   },
 
@@ -377,7 +564,7 @@ export const db = {
   updateSettings: (updates: Partial<PlatformSettings>) => {
     const s = loadState();
     s.settings = { ...s.settings, ...updates };
-    saveState();
+    markDirty('settings');
     return s.settings;
   },
 
@@ -386,7 +573,7 @@ export const db = {
   addAuditLog: (log: AuditLog) => {
     const s = loadState();
     s.auditLogs.unshift(log);
-    saveState();
+    markDirty('auditLogs');
     return log;
   },
 
@@ -403,7 +590,7 @@ export const db = {
         favouriteCookerIds: [],
       };
       s.customerProfiles.push(prof);
-      saveState();
+      markDirty('customerProfiles');
     }
     return prof;
   },
@@ -412,7 +599,7 @@ export const db = {
     const idx = s.customerProfiles.findIndex((p) => p.userId === userId);
     if (idx !== -1) {
       s.customerProfiles[idx] = { ...s.customerProfiles[idx], ...updates };
-      saveState();
+      markDirty('customerProfiles');
       return s.customerProfiles[idx];
     }
     return null;
@@ -429,7 +616,7 @@ export const db = {
     const s = loadState();
     if (!s.customRequests) s.customRequests = [];
     s.customRequests.unshift(req);
-    saveState();
+    markDirty('customRequests');
     return req;
   },
   updateCustomRequest: (id: string, updates: Partial<CustomFoodRequest>) => {
@@ -442,20 +629,34 @@ export const db = {
         ...updates,
         updatedAt: new Date().toISOString(),
       };
-      saveState();
+      markDirty('customRequests');
       return s.customRequests[idx];
     }
     return null;
   },
 
   // Reset helper
-  resetToInitialData: () => {
+  resetToInitialData: async () => {
     state = null;
-    if (fs.existsSync(DATA_FILE)) {
+    const localFile = getLocalFilePath();
+    if (fs.existsSync(localFile)) {
       try {
-        fs.unlinkSync(DATA_FILE);
+        fs.unlinkSync(localFile);
       } catch {}
     }
-    return loadState();
+    const pool = getPgPool();
+    if (pool) {
+      try {
+        await pool.query('DELETE FROM marketplace_store');
+      } catch {}
+    }
+    const fresh = getInitialState();
+    state = fresh;
+    if (pool) {
+      await flushAllToPostgres(pool, fresh);
+    } else {
+      saveLocalFileState();
+    }
+    return fresh;
   },
 };

@@ -20,7 +20,8 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 
-export default function HomePage() {
+export default async function HomePage() {
+  await db.sync();
   const categories = db.getCategories();
   const allProducts = db.getProducts().filter((p) => p.status === 'APPROVED');
   // Order latest first so any newly created dish immediately appears prominently

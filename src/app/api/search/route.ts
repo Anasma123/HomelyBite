@@ -44,6 +44,7 @@ export async function GET(request: Request) {
       sortBy,
     };
 
+    await db.sync();
     const products = db.getProducts();
     const cookers = db.getCookers();
     const categories = db.getCategories();

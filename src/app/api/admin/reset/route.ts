@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export async function POST() {
   try {
-    db.resetToInitialData();
+    await db.resetToInitialData();
     return NextResponse.json({
       success: true,
       message: 'Database reset to clean fresh slate successfully.',

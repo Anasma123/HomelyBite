@@ -65,9 +65,9 @@ export default function CheckoutPage() {
 
     try {
       const payload = {
-        customerId: currentUser?.id || 'usr-cust-1',
-        customerName: currentUser?.name || 'Amina Fathima',
-        customerPhone: currentUser?.phone || '+91 9554433221',
+        customerId: currentUser?.id || 'usr-guest',
+        customerName: currentUser?.name || 'Customer',
+        customerPhone: currentUser?.phone || '',
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
         deliveryAddress: selectedAddress,
         deliveryMode,

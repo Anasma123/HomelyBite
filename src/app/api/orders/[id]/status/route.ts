@@ -3,12 +3,16 @@ import { db } from '@/lib/db';
 import { DeliveryService } from '@/lib/services/delivery-service';
 import { OrderStatus, DeliveryMode } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
+    await db.sync();
     const body = await request.json();
     const { status, actorName = 'System', actorRole = 'COOKER', note } = body;
 
@@ -125,6 +129,8 @@ export async function POST(
       details: `Order #${order.orderNumber} changed from ${previousStatus} to ${newStatus}.`,
       timestamp: now,
     });
+
+    await db.flush();
 
     return NextResponse.json({
       success: true,

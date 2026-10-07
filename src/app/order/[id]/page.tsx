@@ -10,6 +10,7 @@ interface Props {
 
 export default async function OrderPage({ params }: Props) {
   const { id } = await params;
+  await db.sync();
   const order = db.getOrderById(id);
 
   if (!order) {

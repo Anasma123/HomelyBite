@@ -6,9 +6,13 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
+    await db.sync();
     const req = db.getCustomRequestById(id);
 
     if (!req) {
@@ -34,6 +38,7 @@ export async function GET(request: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
+    await db.sync();
     const body = await request.json();
     const req = db.getCustomRequestById(id);
 
@@ -173,6 +178,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const updated = db.updateCustomRequest(id, updates);
+    await db.flush();
 
     return NextResponse.json({
       success: true,

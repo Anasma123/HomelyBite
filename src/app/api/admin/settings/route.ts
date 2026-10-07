@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
+    await db.sync();
     const settings = db.getSettings();
     return NextResponse.json({ success: true, settings });
   } catch (error) {
@@ -12,6 +16,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await db.sync();
     const body = await request.json();
     const { updates, adminEmail = 'admin@homefood.local' } = body;
 
@@ -28,6 +33,8 @@ export async function POST(request: Request) {
       details: `Platform settings updated: ${JSON.stringify(updates)}`,
       timestamp: new Date().toISOString(),
     });
+
+    await db.flush();
 
     return NextResponse.json({ success: true, settings: newSettings });
   } catch (error) {

@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { CustomFoodRequest } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   try {
+    await db.sync();
     const { searchParams } = new URL(request.url);
     const cookerId = searchParams.get('cookerId');
     const customerId = searchParams.get('customerId');
@@ -34,6 +38,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await db.sync();
     const body = await request.json();
 
     if (!body.dishName || !body.customerName || !body.customerPhone) {
@@ -76,6 +81,7 @@ export async function POST(request: Request) {
     };
 
     const saved = db.createCustomRequest(newRequest);
+    await db.flush();
 
     return NextResponse.json({
       success: true,

@@ -21,6 +21,8 @@ export async function POST(request: Request) {
       specialInstructions,
     } = body;
 
+    await db.sync();
+
     if (!customerId || !items.length || !deliveryAddress) {
       return NextResponse.json(
         { success: false, message: 'Missing required order fields: items, customer, or address.' },
@@ -191,6 +193,8 @@ export async function POST(request: Request) {
       details: `Order #${newOrder.orderNumber} placed for ₹${newOrder.totalAmount} (${orderItems.length} items).`,
       timestamp: new Date().toISOString(),
     });
+
+    await db.flush();
 
     return NextResponse.json({
       success: true,

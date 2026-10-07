@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -11,6 +14,8 @@ export async function POST(request: Request) {
     }
 
     const input = (email || '').trim().toLowerCase();
+
+    await db.sync();
 
     // Check for user by exact email or admin alias ('silu', 'admin', 'silu@homelybite.com', 'silu@homefood.local', 'admin@homefood.local')
     const users = db.getUsers();

@@ -8,6 +8,8 @@ import { AIService } from '@/lib/services/ai-service';
 
 export async function GET(request: Request) {
   try {
+    await db.sync();
+
     const { searchParams } = new URL(request.url);
     const cookerId = searchParams.get('cookerId');
     const categoryId = searchParams.get('categoryId');
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await db.sync();
+
     const body = await request.json();
     const {
       cookerId,
@@ -60,55 +64,16 @@ export async function POST(request: Request) {
       ingredients = [],
     } = body;
 
-    // Check cooker approval with robust fallback
-    let cooker = cookerId ? db.getCookerById(cookerId) : null;
-    if (!cooker && cookerId) {
-      cooker = db.getCookerByUserId(cookerId);
-    }
+    // Check cooker approval
+    let cooker = cookerId ? (db.getCookerById(cookerId) || db.getCookerByUserId(cookerId)) : null;
     if (!cooker) {
       cooker = db.getCookers()[0];
     }
     if (!cooker) {
-      // Auto-create default approved cooker profile if none exists
-      const defaultUser = db.getUserById('usr-cooker-default') || db.createUser({
-        id: 'usr-cooker-default',
-        name: 'Anas Artisanal Baker',
-        email: 'anas.bakery@homelybite.com',
-        phone: '+91 9846012345',
-        role: 'COOKER',
-        isVerified: true,
-        status: 'ACTIVE',
-        isFrozen: false,
-        avatarUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      cooker = db.createCooker({
-        id: cookerId || 'cook-prof-1',
-        userId: defaultUser.id,
-        storeName: 'Anas Artisanal Home Bakery',
-        bio: 'Freshly baked homemade delicacies, artisanal breads, celebration cakes, and warm family recipes.',
-        logoUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400',
-        coverImageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200',
-        status: 'APPROVED',
-        rating: 5.0,
-        totalReviews: 0,
-        totalOrders: 0,
-        fssaiLicenseNumber: 'FSSAI-KL-2026-ACTIVE',
-        address: 'Panampilly Nagar, Kochi, Kerala',
-        latitude: 9.9675,
-        longitude: 76.2995,
-        platformDeliveryEnabled: true,
-        selfDeliveryEnabled: true,
-        customerPickupEnabled: true,
-        selfDeliveryRadiusKm: 6.0,
-        platformDeliveryRadiusKm: 12.0,
-        minimumOrderValue: 200,
-        averagePrepTimeMinutes: 45,
-        maxDailyCapacity: 20,
-        isOpenToday: true,
-        openingHours: '09:00 AM - 09:00 PM',
-      });
+      return NextResponse.json({
+        success: false,
+        message: 'No registered cooker profile found. Please register as a cooker or sign in.',
+      }, { status: 400 });
     }
 
     if (cooker.status !== 'APPROVED') {
@@ -210,6 +175,8 @@ export async function POST(request: Request) {
       details: `Product "${newProduct.name}" created with calculated nutrition and allergen tags.`,
       timestamp: new Date().toISOString(),
     });
+
+    await db.flush();
 
     return NextResponse.json({
       success: true,

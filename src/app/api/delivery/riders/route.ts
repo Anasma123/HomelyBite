@@ -6,6 +6,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
+    await db.sync();
     const riders = db.getRiders();
     const users = db.getUsers();
 
@@ -34,6 +35,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    await db.sync();
     const body = await request.json();
     const { riderId, status, currentLatitude, currentLongitude, deliveryRadiusKm } = body;
 
@@ -51,6 +53,7 @@ export async function PATCH(request: Request) {
     if (!updated) {
       return NextResponse.json({ success: false, message: 'Rider not found' }, { status: 404 });
     }
+    await db.flush();
 
     return NextResponse.json({ success: true, rider: updated });
   } catch (error) {

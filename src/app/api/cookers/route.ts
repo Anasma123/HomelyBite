@@ -6,6 +6,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
+    await db.sync();
     const cookers = db.getCookers();
     return NextResponse.json(
       { success: true, count: cookers.length, cookers },
@@ -22,6 +23,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    await db.sync();
     const body = await request.json();
     const { cookerId, ...updates } = body;
 
@@ -33,6 +35,7 @@ export async function PATCH(request: Request) {
     if (!updated) {
       return NextResponse.json({ success: false, message: 'Cooker not found' }, { status: 404 });
     }
+    await db.flush();
 
     return NextResponse.json({ success: true, cooker: updated });
   } catch (error) {

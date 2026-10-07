@@ -12,6 +12,7 @@ interface RouteContext {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
+    await db.sync();
     const body = await request.json();
     const { action } = body;
 
@@ -23,6 +24,7 @@ export async function PATCH(request: Request, context: RouteContext) {
           { status: 404 }
         );
       }
+      await db.flush();
       return NextResponse.json({
         success: true,
         user: updated,
@@ -40,6 +42,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 404 }
       );
     }
+    await db.flush();
 
     return NextResponse.json({
       success: true,
@@ -58,6 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
+    await db.sync();
     const user = db.getUserById(id);
 
     if (!user) {
@@ -82,6 +86,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         { status: 400 }
       );
     }
+    await db.flush();
 
     return NextResponse.json({
       success: true,

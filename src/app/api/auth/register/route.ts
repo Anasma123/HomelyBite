@@ -25,6 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Name, email, and phone are required.' }, { status: 400 });
     }
 
+    await db.sync();
+
     const normalizedEmail = email.trim().toLowerCase();
     const existing = db.getUserByEmail(normalizedEmail);
     if (existing) {
@@ -92,6 +94,13 @@ export async function POST(request: Request) {
         timestamp: new Date().toISOString(),
       });
 
+      await db.flush();
+      try {
+        revalidatePath('/');
+        revalidatePath('/cooker/dashboard');
+        revalidatePath('/admin/dashboard');
+      } catch (e) {}
+
       return NextResponse.json({
         success: true,
         message: 'Cooker account registered and verified successfully! Welcome to your kitchen.',
@@ -132,6 +141,13 @@ export async function POST(request: Request) {
         timestamp: new Date().toISOString(),
       });
 
+      await db.flush();
+      try {
+        revalidatePath('/');
+        revalidatePath('/delivery/portal');
+        revalidatePath('/admin/dashboard');
+      } catch (e) {}
+
       return NextResponse.json({
         success: true,
         message: 'Delivery Rider registered successfully! Welcome to your rider portal.',
@@ -140,13 +156,14 @@ export async function POST(request: Request) {
       });
     }
 
+    // Customer
+    db.getCustomerProfile(newUser.id);
+    await db.flush();
+
     try {
       revalidatePath('/');
       revalidatePath('/admin/dashboard');
     } catch (e) {}
-
-    // Customer
-    db.getCustomerProfile(newUser.id);
 
     return NextResponse.json({
       success: true,

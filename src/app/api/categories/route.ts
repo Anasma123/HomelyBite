@@ -8,6 +8,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
+    await db.sync();
     const categories = db.getCategories();
     return NextResponse.json(
       { success: true, count: categories.length, categories },
@@ -24,6 +25,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    await db.sync();
+
     const body = await request.json();
     const { name, description, imageUrl, displayOrder = 0, subcategories = [] } = body;
 
@@ -44,6 +47,7 @@ export async function POST(request: Request) {
     };
 
     db.createCategory(newCategory);
+    await db.flush();
 
     // Immediately revalidate all consumer pages
     try {

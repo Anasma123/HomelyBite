@@ -13,6 +13,7 @@ interface ProductPageProps {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
+  await db.sync();
 
   const product = db.getProductById(id) || db.getProductBySlug(id);
   if (!product) {

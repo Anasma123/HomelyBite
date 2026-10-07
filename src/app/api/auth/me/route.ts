@@ -6,6 +6,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
+    await db.sync();
     const users = db.getUsers();
     return NextResponse.json(
       {

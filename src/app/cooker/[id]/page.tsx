@@ -23,6 +23,7 @@ interface CookerPageProps {
 
 export default async function CookerStorePage({ params }: CookerPageProps) {
   const { id } = await params;
+  await db.sync();
   const cooker = db.getCookerById(id);
 
   if (!cooker) {
